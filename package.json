@@ -93,6 +93,14 @@
       "import": "./src/charts/index.ts",
       "types": "./src/charts/index.ts"
     },
+    "./localization": {
+      "import": "./src/localization/index.ts",
+      "types": "./src/localization/index.ts"
+    },
+    "./localization/style.css": {
+      "style": "./src/localization/style.css",
+      "import": "./src/localization/style.css"
+    },
     "./icons": {
       "types": "./icons/index.ts",
       "import": "./icons/index.ts"

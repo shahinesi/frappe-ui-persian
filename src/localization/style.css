@@ -1,0 +1,5 @@
+/* Optional utility: the consuming app must load/register the Vazirmatn font. */
+.fui-vazirmatn {
+  font-family:
+    Vazirmatn, var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+}

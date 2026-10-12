@@ -71,6 +71,7 @@ function buildSidebar(): SidebarSection[] {
         { text: 'Radius', link: '/docs/foundations/radius' },
         { text: 'Shadows', link: '/docs/foundations/shadows' },
         { text: 'Focus ring', link: '/docs/foundations/focus-ring' },
+        { text: 'Localization', link: '/docs/foundations/localization' },
       ],
     },
     { text: 'Components', items: componentItems },

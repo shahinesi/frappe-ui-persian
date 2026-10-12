@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { afterEach, describe, expect, it } from 'vitest'
-import { documentDir, documentLocale } from './utils'
+import { documentDir, documentLocale } from '../utils/documentAttributes'
 import { formatValue } from './format'
 
 afterEach(() => {

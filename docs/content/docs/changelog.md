@@ -34,6 +34,10 @@ the change reaches your app:
 
 Entries are grouped by area. Inside each area, they keep the order they had in the single list this page used before.
 
+## Unreleased
+
+- **Localization (additive):** `frappe-ui/localization` exposes reactive document language/direction and display-only locale number/date formatters. `frappe-ui/localization/style.css` adds an opt-in Vazirmatn font-family utility; the app supplies the font asset.
+
 ## 1.0.0 {#v1-0-0}
 
 - [Packaging and setup](#packaging-and-setup)

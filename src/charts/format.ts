@@ -1,6 +1,6 @@
 import { dayjs } from '#utils/dayjs'
+import { formatLocaleNumber } from '../localization/localization'
 import { chartFont, measureTextWidth } from './measureText'
-import { documentLocale } from './utils'
 
 export type TimeGrain =
   | 'second'
@@ -116,20 +116,18 @@ export function formatValue(
 ) {
   if (value === null || value === undefined || isNaN(value)) return ''
 
-  const locale = documentLocale()
-
   if (shorten) {
-    return new Intl.NumberFormat(locale, {
+    return formatLocaleNumber(value, {
       notation: 'compact',
       maximumFractionDigits: precision ?? 1,
-    }).format(value)
+    })
   }
 
   const digits = precision ?? guessPrecision(value)
-  return new Intl.NumberFormat(locale, {
+  return formatLocaleNumber(value, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
-  }).format(value)
+  })
 }
 
 /** `0.4` -> `<1%`: a rounded `0%` on a slice that is visibly there reads as a bug. */

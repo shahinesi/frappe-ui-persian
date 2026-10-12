@@ -76,6 +76,17 @@ describe('files', () => {
 })
 
 describe('exports', () => {
+  it('provides an explicit localization entry and optional Vazirmatn utility CSS', () => {
+    expect(pkg.exports['./localization']).toEqual({
+      import: './src/localization/index.ts',
+      types: './src/localization/index.ts',
+    })
+    expect(pkg.exports['./localization/style.css']).toEqual({
+      style: './src/localization/style.css',
+      import: './src/localization/style.css',
+    })
+  })
+
   it('gives every code subpath a types condition', () => {
     for (const [subpath, conditions] of Object.entries(pkg.exports)) {
       if (subpath.endsWith('.css') || subpath.endsWith('.json')) continue

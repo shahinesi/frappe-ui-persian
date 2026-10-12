@@ -44,6 +44,32 @@ renders its existing Gregorian calendar. These helpers do not turn that
 interactive calendar into a Jalali calendar; that requires a separately
 designed, tested calendar adapter.
 
+## Persian calendar model
+
+For applications that need to render a Jalali calendar while keeping Frappe's
+Gregorian API contract, the localization subpath also exports a headless
+calendar model:
+
+```ts
+import {
+  getISODateFromPersianDate,
+  getPersianCalendarMonth,
+  getPersianDateFromISO,
+} from 'frappe-ui/localization'
+
+const grid = getPersianCalendarMonth(1404, 1, 'fa-IR')
+const selected = getISODateFromPersianDate({ year: 1404, month: 1, day: 1 })
+const displayFields = getPersianDateFromISO(selected)
+```
+
+The grid contains six weeks, always ordered Saturday through Friday. Each cell
+includes a Persian day label and a Gregorian `isoDate`; pass that ISO value to
+the existing DatePicker model or backend without converting the stored value.
+The model is headless and does not replace Frappe UI's interactive DatePicker.
+Its supported Persian years are 1200–1600. Calendar conversion uses the
+runtime's `Intl` Persian calendar implementation, so no date-conversion
+dependency is bundled.
+
 ## Vazirmatn
 
 Import the optional utility stylesheet and register the font asset in the

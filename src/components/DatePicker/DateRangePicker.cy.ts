@@ -79,6 +79,13 @@ const getDateFromDay = (day: number) => {
 }
 
 describe('DateRangePicker', () => {
+  afterEach(() => {
+    cy.document().then((document) => {
+      document.documentElement.lang = ''
+      document.documentElement.dir = ''
+    })
+  })
+
   it('presents Jalali range endpoints but keeps the model Gregorian ISO', () => {
     cy.document().then((document) => {
       document.documentElement.lang = 'fa-IR'

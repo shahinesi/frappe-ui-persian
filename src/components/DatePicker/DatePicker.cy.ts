@@ -48,6 +48,13 @@ const getTodaysDate = () => {
 }
 
 describe('DatePicker', () => {
+  afterEach(() => {
+    cy.document().then((document) => {
+      document.documentElement.lang = ''
+      document.documentElement.dir = ''
+    })
+  })
+
   it('presents a Persian date while emitting the selected Gregorian ISO value', () => {
     cy.document().then((document) => {
       document.documentElement.lang = 'fa-IR'

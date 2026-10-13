@@ -66,7 +66,7 @@
           ref="calendarRef"
           :model-value="selected"
           :calendar="props.calendar"
-          today-label=""
+          today-label="Today"
           :min="props.min"
           :max="props.max"
           :is-date-unavailable="props.isDateUnavailable"

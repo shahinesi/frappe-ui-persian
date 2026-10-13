@@ -54,7 +54,7 @@ import type {
 } from './calendarTypes'
 
 const props = withDefaults(defineProps<DateCalendarProps>(), {
-  todayLabel: '',
+  todayLabel: 'Today',
   calendar: 'gregorian',
 })
 
@@ -187,7 +187,12 @@ const monthLabels = computed(() => {
 const weekdayLabels = computed(() => persianMonthData.value?.weekdayLabels)
 const yearLabel = computed(() => persianMonthData.value?.yearLabel)
 const resolvedTodayLabel = computed(
-  () => props.todayLabel || (locale.value.startsWith('fa') ? 'امروز' : 'Today'),
+  () =>
+    props.calendar === 'persian' &&
+    props.todayLabel === 'Today' &&
+    locale.value.startsWith('fa')
+      ? 'امروز'
+      : props.todayLabel,
 )
 const formatYear = computed(() =>
   isPersian.value

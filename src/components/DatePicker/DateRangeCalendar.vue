@@ -91,7 +91,7 @@ import type {
 import type { DateRangeValue } from './types'
 
 const props = withDefaults(defineProps<DateRangeCalendarProps>(), {
-  todayLabel: '',
+  todayLabel: 'Today',
   dualPane: false,
   calendar: 'gregorian',
 })
@@ -242,7 +242,11 @@ const selectableYears = computed(() => {
   const end = Math.min(MAX_SUPPORTED_YEAR, Math.max(maxYear, activeYear.value))
   return Array.from({ length: Math.max(0, end - start + 1) }, (_, index) => start + index)
 })
-const todayLabel = computed(() => props.todayLabel || (locale.value.startsWith('fa') ? 'امروز' : 'Today'))
+const todayLabel = computed(() =>
+  isPersian.value && props.todayLabel === 'Today' && locale.value.startsWith('fa')
+    ? 'امروز'
+    : props.todayLabel,
+)
 
 const leftPanelRef = ref<CalendarPanelExposed | null>(null)
 const rightPanelRef = ref<CalendarPanelExposed | null>(null)

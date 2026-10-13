@@ -126,6 +126,10 @@ function selectYear(year: number): void {
   else gregorian.selectYear(year)
 }
 
+function cycleView(): void {
+  view.value = view.value === 'date' ? 'monthYear' : 'date'
+}
+
 const checkUnavailable = makeUnavailableCheck(
   () => props.min,
   () => props.max,

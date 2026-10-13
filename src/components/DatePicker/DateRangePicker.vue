@@ -213,7 +213,8 @@ function parseRangeInput(raw: string): [Dayjs | null, Dayjs | null] {
     .map((p) => p.trim())
     .filter(Boolean)
   if (!parts.length) return [null, null]
-  const parse = (value: string) => {
+  const parse = (value?: string) => {
+    if (!value) return null
     if (props.calendar === 'persian') {
       const isoDate = parsePersianDate(value, props.format ?? 'YYYY/MM/DD', locale.value)
       return isoDate ? dayjs(isoDate) : coerceToDayjs(value)
@@ -286,9 +287,12 @@ function commitInput(close = false): void {
     return
   }
   const [f, t] = parseRangeInput(raw)
-  if (f && !checkUnavailable(f)) fromDate.value = f.format(DATE_FORMAT)
-  if (t && !checkUnavailable(t)) toDate.value = t.format(DATE_FORMAT)
-  else if (!t) toDate.value = ''
+  if (!f || !t || checkUnavailable(f) || checkUnavailable(t)) {
+    inputValue.value = displayLabel.value
+    return
+  }
+  fromDate.value = f.format(DATE_FORMAT)
+  toDate.value = t.format(DATE_FORMAT)
   setOrdered([fromDate.value, toDate.value])
   emitIfChanged()
   inputValue.value = displayLabel.value

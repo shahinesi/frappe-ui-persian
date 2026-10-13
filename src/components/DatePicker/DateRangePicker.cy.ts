@@ -97,6 +97,25 @@ describe('DateRangePicker', () => {
     cy.get('[role=grid]').find('div').first().should('contain.text', 'شنبه')
   })
 
+  it('rejects a one-sided typed Jalali range without emitting a partial model', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DateRangePicker, {
+      props: {
+        calendar: 'persian',
+        modelValue: [],
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+
+    cy.get('input').type('۱۴۰۵/۱۰/۱۱').blur()
+    cy.get('input').should('have.value', '')
+    cy.get('@updateModel').should('not.have.been.called')
+  })
+
   it('renders', () => {
     cy.mount(DateRangePicker)
 

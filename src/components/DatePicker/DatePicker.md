@@ -44,6 +44,11 @@ the range into "Depart" and "Return" fields over one calendar.
 `format` changes only the text shown in the input, not the value. Type a range
 with `DateRangeValue`, exported from `frappe-ui`.
 
+`DateRangePicker` emits only a complete two-ended range or `[]`. Its first
+calendar click is an internal pending endpoint; incomplete typed ranges are
+rejected and the input returns to the current value. Use two `DatePicker`
+controls when a form needs open-ended date filters.
+
 Set `calendar="persian"` on `DatePicker` or `DateRangePicker` to display and
 type dates using the Jalali calendar. The model, `min`/`max`, selection events,
 and unavailable-date callback continue to use Gregorian ISO dates. Numeric

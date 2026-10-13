@@ -104,6 +104,15 @@ describe('DateRangePicker', () => {
     cy.get('[role=grid]').find('div').first().should('contain.text', 'شنبه')
   })
 
+  it('supports a localized today label and placeholder', () => {
+    cy.mount(DateRangePicker, {
+      props: { todayLabel: 'امروز', placeholder: 'انتخاب بازه' },
+    })
+
+    cy.get('input').should('have.attr', 'placeholder', 'انتخاب بازه').dblclick()
+    cy.get('[aria-label="امروز"]').should('be.visible')
+  })
+
   it('rejects a one-sided typed Jalali range without emitting a partial model', () => {
     cy.document().then((document) => {
       document.documentElement.lang = 'fa-IR'

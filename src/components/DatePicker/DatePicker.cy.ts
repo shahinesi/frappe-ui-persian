@@ -117,6 +117,15 @@ describe('DatePicker', () => {
     cy.get('input').should('have.value', getTodaysDate())
   })
 
+  it('supports a localized today label and placeholder', () => {
+    cy.mount(DatePicker, {
+      props: { todayLabel: 'امروز', placeholder: 'انتخاب تاریخ' },
+    })
+
+    cy.get('input').should('have.attr', 'placeholder', 'انتخاب تاریخ').dblclick()
+    cy.get('[aria-label="امروز"]').should('be.visible')
+  })
+
   it('clicking the already-selected date closes the popover', () => {
     cy.mount(DatePicker, { props: { modelValue: '2025-06-15' } })
     cy.get('input').dblclick()

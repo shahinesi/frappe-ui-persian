@@ -82,6 +82,9 @@ export interface DatePickerProps extends CommonDatePickerProps {
 
   /** Calendar used to present dates. Values remain Gregorian `YYYY-MM-DD`. */
   calendar?: 'gregorian' | 'persian'
+
+  /** Label for the action that selects today. Empty hides the action. Default: `Today`. */
+  todayLabel?: string
 }
 
 /** A range value: a `[from, to]` tuple in `YYYY-MM-DD` format, or `[]` when cleared. */
@@ -98,6 +101,9 @@ export interface DateRangePickerProps extends CommonDatePickerProps {
 
   /** Calendar used to present dates. Values remain Gregorian `YYYY-MM-DD`. */
   calendar?: 'gregorian' | 'persian'
+
+  /** Label for the action that selects today. Empty hides the action. Default: `Today`. */
+  todayLabel?: string
 
   /** Render two calendar panels side by side (current month + next month). */
   dualPane?: boolean

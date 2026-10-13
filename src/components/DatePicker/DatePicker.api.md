@@ -51,6 +51,13 @@
     default: '"Select date"'
   },
   {
+    name: 'todayLabel',
+    description: 'Label for the action that selects today. Empty hides the action. Default: `Today`.',
+    required: false,
+    type: 'string',
+    default: '"Today"'
+  },
+  {
     name: 'open',
     description: 'Controls popover open state (for controlled usage).',
     required: false,
@@ -264,6 +271,13 @@
     required: false,
     type: 'string',
     default: '"Select range"'
+  },
+  {
+    name: 'todayLabel',
+    description: 'Label for the action that selects today. Empty hides the action. Default: `Today`.',
+    required: false,
+    type: 'string',
+    default: '"Today"'
   },
   {
     name: 'open',

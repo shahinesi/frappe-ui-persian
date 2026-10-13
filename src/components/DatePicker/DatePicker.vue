@@ -66,7 +66,7 @@
           ref="calendarRef"
           :model-value="selected"
           :calendar="props.calendar"
-          today-label="Today"
+          :today-label="props.todayLabel"
           :min="props.min"
           :max="props.max"
           :is-date-unavailable="props.isDateUnavailable"
@@ -104,6 +104,7 @@ const props = withDefaults(defineProps<DatePickerProps>(), {
   modelValue: '',
   variant: 'subtle',
   placeholder: 'Select date',
+  todayLabel: 'Today',
   typeable: true,
   disabled: false,
   clearable: true,

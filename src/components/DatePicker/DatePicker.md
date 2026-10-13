@@ -55,6 +55,9 @@ and unavailable-date callback continue to use Gregorian ISO dates. Numeric
 formats and `MMM`/`MMMM` Jalali month names are accepted for typed dates; a
 format without a year uses the current Jalali year when parsing.
 
+Use `todayLabel` to localize the calendar's Today action; pass an empty string
+to hide it. The input `placeholder` can also be localized per picker.
+
 ### Limits
 
 `min` and `max` take `'YYYY-MM-DD'`. `DateTimePicker` also takes

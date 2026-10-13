@@ -67,6 +67,7 @@
           :model-value="[fromDate, toDate]"
           :dual-pane="props.dualPane"
           :calendar="props.calendar"
+          :today-label="props.todayLabel"
           :min="props.min"
           :max="props.max"
           :is-date-unavailable="props.isDateUnavailable"
@@ -110,6 +111,7 @@ const props = withDefaults(defineProps<DateRangePickerProps>(), {
   modelValue: () => [],
   variant: 'subtle',
   placeholder: 'Select range',
+  todayLabel: 'Today',
   typeable: true,
   disabled: false,
   clearable: true,

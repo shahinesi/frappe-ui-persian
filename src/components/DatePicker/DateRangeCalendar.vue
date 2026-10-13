@@ -255,12 +255,14 @@ let ownKey: string | null = null
 
 function seedFocus(): void {
   const anchor = fromDate.value ? dayjs(fromDate.value) : dayjsLocal().startOf('day')
-  if (anchor.isValid() && !checkUnavailable(anchor)) {
+  if (anchor.isValid()) {
     const persianYear = getPersianDateFromISO(anchor.format(DATE_FORMAT)).year
     if (!isPersian.value || persianYear >= MIN_SUPPORTED_YEAR && persianYear <= MAX_SUPPORTED_YEAR) {
-      focusedDate.value = anchor
       navigateToDate(anchor)
-      return
+      if (!checkUnavailable(anchor)) {
+        focusedDate.value = anchor
+        return
+      }
     }
   }
   const cell = weeks.value.flat().find((item) => item.inMonth && !item.isUnavailable)

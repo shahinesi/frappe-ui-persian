@@ -216,12 +216,14 @@ let ownCommit: string | null = null
 
 function seedFocus(): void {
   const anchor = model.value ? dayjs(model.value) : dayjs(todayISO.value)
-  if (anchor.isValid() && !checkUnavailable(anchor)) {
+  if (anchor.isValid()) {
     if (!isPersian.value || getPersianDateFromISO(anchor.format(DATE_FORMAT)).year <= MAX_SUPPORTED_YEAR && getPersianDateFromISO(anchor.format(DATE_FORMAT)).year >= MIN_SUPPORTED_YEAR) {
-      focusedDate.value = anchor
       if (isPersian.value) setPersianView(anchor)
       else gregorian.focusOn(anchor)
-      return
+      if (!checkUnavailable(anchor)) {
+        focusedDate.value = anchor
+        return
+      }
     }
   }
   const cell = weeks.value.flat().find((item) => item.inMonth && !item.isUnavailable)

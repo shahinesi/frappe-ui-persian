@@ -72,8 +72,8 @@ dependency is bundled.
 
 ## Vazirmatn
 
-Import the optional utility stylesheet and register the font asset in the
-consuming app:
+Import the optional utility stylesheet. It includes the Vazirmatn variable
+font and its SIL Open Font License notice:
 
 ```ts
 import 'frappe-ui/localization/style.css'
@@ -83,6 +83,7 @@ import 'frappe-ui/localization/style.css'
 <section class="fui-vazirmatn">Persian text</section>
 ```
 
-The package does not bundle the font file. The class applies the `Vazirmatn`
-font family when the consuming application has loaded it, with a sans-serif
-fallback.
+The `.fui-vazirmatn` class applies the bundled `Vazirmatn` font with a
+sans-serif fallback. It is opt-in: importing the stylesheet does not change
+typography outside elements carrying this class. Font loading uses
+`font-display: swap`.

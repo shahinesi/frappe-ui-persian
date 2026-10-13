@@ -116,6 +116,13 @@
     type: '((date: Dayjs) => boolean)'
   },
   {
+    name: 'calendar',
+    description: 'Calendar used to present dates. Values remain Gregorian `YYYY-MM-DD`.',
+    required: false,
+    type: '"gregorian" | "persian"',
+    default: '"gregorian"'
+  },
+  {
     name: 'modelValue',
     description: 'Controlled value for the picker.',
     required: false,
@@ -322,6 +329,13 @@
     description: 'Return true to prevent a date from being selected. Combined with `min`/`max`.',
     required: false,
     type: '((date: Dayjs) => boolean)'
+  },
+  {
+    name: 'calendar',
+    description: 'Calendar used to present dates. Values remain Gregorian `YYYY-MM-DD`.',
+    required: false,
+    type: '"gregorian" | "persian"',
+    default: '"gregorian"'
   },
   {
     name: 'modelValue',

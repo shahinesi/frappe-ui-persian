@@ -66,7 +66,7 @@
           ref="calendarRef"
           :model-value="[fromDate, toDate]"
           :dual-pane="props.dualPane"
-          today-label="Today"
+          :calendar="props.calendar"
           :min="props.min"
           :max="props.max"
           :is-date-unavailable="props.isDateUnavailable"
@@ -81,6 +81,8 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch } from 'vue'
 import { dayjs } from '../../utils/dayjs'
+import { formatPersianDate, parsePersianDate } from '../../localization/persianCalendar'
+import { useDocumentLocale } from '../../localization/localization'
 import { orderRange, rangeKey, stepRange } from './utils'
 import DateRangeCalendar from './DateRangeCalendar.vue'
 import PickerShell from '../shared/picker/PickerShell.vue'
@@ -114,6 +116,7 @@ const props = withDefaults(defineProps<DateRangePickerProps>(), {
   dualPane: false,
   openOnFocus: false,
   openOnClick: true,
+  calendar: 'gregorian',
 })
 const emit = defineEmits<DateRangePickerEmits>()
 
@@ -179,6 +182,7 @@ const inputReadonly = useTypeable(props)
 // ── Range state ──────────────────────────────────────────────────────────────
 
 const DATE_FORMAT = 'YYYY-MM-DD'
+const { locale } = useDocumentLocale()
 const fromDate = ref<string>('')
 const toDate = ref<string>('')
 
@@ -201,13 +205,22 @@ function normalizeIncoming(val?: string[] | null): [string, string] {
 
 function parseRangeInput(raw: string): [Dayjs | null, Dayjs | null] {
   if (!raw.trim()) return [null, null]
-  const normalized = raw.replace(/\s+to\s+/i, ',').replace(/\s+-\s+/g, ',')
+  const normalized = raw
+    .replace(/\s+(?:to|تا)\s+/i, ',')
+    .replace(/\s+[–—-]\s+/g, ',')
   const parts = normalized
     .split(',')
     .map((p) => p.trim())
     .filter(Boolean)
   if (!parts.length) return [null, null]
-  return [coerceToDayjs(parts[0]), coerceToDayjs(parts[1])]
+  const parse = (value: string) => {
+    if (props.calendar === 'persian') {
+      const isoDate = parsePersianDate(value, props.format ?? 'YYYY/MM/DD', locale.value)
+      return isoDate ? dayjs(isoDate) : coerceToDayjs(value)
+    }
+    return coerceToDayjs(value)
+  }
+  return [parse(parts[0]), parse(parts[1])]
 }
 
 function pickIncoming(): string[] {
@@ -243,6 +256,9 @@ const displayLabel = computed<string>(() =>
 
 function formatOne(dateStr: string): string {
   if (!dateStr) return ''
+  if (props.calendar === 'persian') {
+    return formatPersianDate(dateStr, locale.value, props.format ?? 'YYYY/MM/DD')
+  }
   const d = dayjs(dateStr)
   if (!d.isValid()) return dateStr
   return props.format ? d.format(props.format) : dateStr
@@ -250,7 +266,8 @@ function formatOne(dateStr: string): string {
 function formatDisplay(from: string, to: string): string {
   if (!from && !to) return ''
   if (from && !to) return formatOne(from)
-  return `${formatOne(from)} to ${formatOne(to)}`
+  const separator = locale.value.startsWith('fa') ? ' تا ' : ' to '
+  return `${formatOne(from)}${separator}${formatOne(to)}`
 }
 
 const inputValue = ref<string>(displayLabel.value)

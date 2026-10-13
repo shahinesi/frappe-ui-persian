@@ -6,19 +6,21 @@
     >
       <Button
         :class="{ invisible: hidePrev }"
+        :disabled="prevDisabled"
         label="previous"
         variant="ghost"
-        icon="lucide-chevron-left"
+        :icon="direction === 'rtl' ? 'lucide-chevron-right' : 'lucide-chevron-left'"
         @click="emit('prev')"
       />
       <span class="text-sm-medium text-ink-gray-7">
-        {{ months[currentMonth] }} {{ currentYear }}
+        {{ heading }}
       </span>
       <Button
         :class="{ invisible: hideNext }"
+        :disabled="nextDisabled"
         label="next"
         variant="ghost"
-        icon="lucide-chevron-right"
+        :icon="direction === 'rtl' ? 'lucide-chevron-left' : 'lucide-chevron-right'"
         @click="emit('next')"
       />
     </div>
@@ -30,14 +32,15 @@
         label="cycle-calendar-view"
         @click="emit('cycleView')"
       >
-        {{ months[currentMonth] }} {{ currentYear }}
+        {{ heading }}
       </Button>
       <div v-if="view === 'date'" class="flex items-center">
         <Button
           v-if="!hidePrev"
+          :disabled="prevDisabled"
           label="previous"
           variant="ghost"
-          icon="lucide-chevron-left"
+          :icon="direction === 'rtl' ? 'lucide-chevron-right' : 'lucide-chevron-left'"
           @click="emit('prev')"
         />
         <Button
@@ -49,9 +52,10 @@
         />
         <Button
           v-if="!hideNext"
+          :disabled="nextDisabled"
           label="next"
           variant="ghost"
-          icon="lucide-chevron-right"
+          :icon="direction === 'rtl' ? 'lucide-chevron-left' : 'lucide-chevron-right'"
           @click="emit('next')"
         />
       </div>
@@ -68,7 +72,7 @@
           class="flex items-center text-xs-medium uppercase text-ink-gray-4 mb-1 gap-0.5"
         >
           <div
-            v-for="(d, di) in WEEKDAYS"
+            v-for="(d, di) in weekdayLabels"
             :key="di"
             class="flex size-7 items-center justify-center"
           >
@@ -105,18 +109,38 @@
                 @mouseenter="emit('hoverCell', cell.date)"
                 @click="!cell.isUnavailable && emit('selectDate', cell.date)"
                 @keydown.left.prevent="
-                  shiftFocus(cell.date.subtract(1, 'day'), -1)
+                  shiftFocus(
+                    cell.date.add(props.direction === 'rtl' ? 1 : -1, 'day'),
+                    props.direction === 'rtl' ? 1 : -1,
+                  )
                 "
-                @keydown.right.prevent="shiftFocus(cell.date.add(1, 'day'), 1)"
+                @keydown.right.prevent="
+                  shiftFocus(
+                    cell.date.add(props.direction === 'rtl' ? -1 : 1, 'day'),
+                    props.direction === 'rtl' ? -1 : 1,
+                  )
+                "
                 @keydown.up.prevent="
                   shiftFocus(cell.date.subtract(7, 'day'), -1)
                 "
                 @keydown.down.prevent="shiftFocus(cell.date.add(7, 'day'), 1)"
                 @keydown.home.prevent="
-                  shiftFocus(cell.date.subtract(cell.date.day(), 'day'), -1)
+                  shiftFocus(
+                    cell.date.subtract(
+                      (cell.date.day() - props.weekStart + 7) % 7,
+                      'day',
+                    ),
+                    -1,
+                  )
                 "
                 @keydown.end.prevent="
-                  shiftFocus(cell.date.add(6 - cell.date.day(), 'day'), 1)
+                  shiftFocus(
+                    cell.date.add(
+                      6 - ((cell.date.day() - props.weekStart + 7) % 7),
+                      'day',
+                    ),
+                    1,
+                  )
                 "
                 @keydown.page-up.prevent="
                   shiftFocus(
@@ -141,7 +165,7 @@
                   !cell.isUnavailable && emit('selectDate', cell.date)
                 "
               >
-                {{ cell.date.date() }}
+                {{ cell.displayDay ?? cell.date.date() }}
               </button>
             </template>
           </div>
@@ -168,7 +192,7 @@
             :aria-selected="y === currentYear ? 'true' : 'false'"
             @click="emit('selectYear', y)"
           >
-            {{ y }}
+            {{ props.formatYear ? props.formatYear(y) : y }}
           </button>
         </div>
         <div
@@ -178,7 +202,7 @@
           aria-label="Select month"
         >
           <button
-            v-for="(m, i) in months"
+            v-for="(m, i) in displayMonths"
             type="button"
             :key="m"
             class="w-full text-ink-gray-8 shrink-0 h-7 rounded-4 py-1 text-sm leading-tighter text-center cursor-pointer transition-colors duration-100"
@@ -217,6 +241,10 @@ const props = withDefaults(defineProps<CalendarPanelProps>(), {
   hideToday: false,
   hideOutOfMonth: false,
   centerHeader: false,
+  weekStart: 0,
+  direction: 'ltr',
+  prevDisabled: false,
+  nextDisabled: false,
 })
 
 const emit = defineEmits<{
@@ -243,6 +271,7 @@ const emit = defineEmits<{
 // (so unreachable years aren't offered) and otherwise fall back to a wide window
 // around the current year. The current year is always included.
 const years = computed<number[]>(() => {
+  if (props.selectableYears) return props.selectableYears
   const current = props.currentYear
   const minY = props.min ? Number(props.min.slice(0, 4)) : current - 100
   const maxY = props.max ? Number(props.max.slice(0, 4)) : current + 10
@@ -388,6 +417,12 @@ function focusInitialCell() {
 defineExpose<CalendarPanelExposed>({ focusInitialCell })
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+const weekdayLabels = computed(() => props.weekdayLabels ?? WEEKDAYS)
+const displayMonths = computed(() => props.monthLabels ?? months)
+const heading = computed(
+  () =>
+    `${displayMonths.value[props.currentMonth]} ${props.currentYearLabel ?? props.currentYear}`,
+)
 
 function ariaSelected(cell: CalendarPanelCell): 'true' | 'false' {
   return cell.isSelected || cell.isRangeStart || cell.isRangeEnd
@@ -396,7 +431,10 @@ function ariaSelected(cell: CalendarPanelCell): 'true' | 'false' {
 }
 
 function ariaLabel(cell: CalendarPanelCell): string {
-  return cell.date.format('YYYY-MM-DD') + (cell.isToday ? ' (Today)' : '')
+  return (
+    (cell.displayDay ? `${displayMonths.value[props.currentMonth]} ${cell.displayDay}, ${props.currentYearLabel ?? props.currentYear}` : cell.date.format('YYYY-MM-DD')) +
+    (cell.isToday ? ` (${props.todayLabel || 'Today'})` : '')
+  )
 }
 
 function cellClass(cell: CalendarPanelCell): Array<string | false> {

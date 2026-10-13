@@ -11,6 +11,8 @@ import type {
 // ── DateCalendar ─────────────────────────────────────────────────────────────
 
 export interface DateCalendarProps {
+  /** Calendar used for presentation; emitted dates always remain Gregorian ISO. */
+  calendar?: 'gregorian' | 'persian'
   /**
    * Earliest selectable date in `YYYY-MM-DD` format. Also bounds keyboard
    * navigation and the year list.
@@ -46,6 +48,8 @@ export interface DateCalendarExposed {
 // ── DateRangeCalendar ────────────────────────────────────────────────────────
 
 export interface DateRangeCalendarProps {
+  /** Calendar used for presentation; emitted dates always remain Gregorian ISO. */
+  calendar?: 'gregorian' | 'persian'
   /**
    * Earliest selectable date in `YYYY-MM-DD` format. Also bounds keyboard
    * navigation and the year list.
@@ -88,6 +92,8 @@ export interface DateRangeCalendarExposed {
 
 /** A single day cell in the calendar grid. */
 export interface CalendarPanelCell extends DatePickerDateObj {
+  /** Locale-aware visible day number, while `date` remains the ISO/Gregorian date. */
+  displayDay?: string
   /** The date cannot be selected (outside `min`/`max`, or `isDateUnavailable`). */
   isUnavailable: boolean
   /** Start endpoint of a range selection. */
@@ -105,10 +111,23 @@ export interface CalendarPanelProps {
   currentYear: number
   /** Month the grid shows, 0-indexed. */
   currentMonth: number
+  /** Optional display labels for a non-Gregorian calendar. */
+  monthLabels?: string[]
+  weekdayLabels?: string[]
+  currentYearLabel?: string
+  selectableYears?: number[]
+  formatYear?: (year: number) => string
+  /** JavaScript weekday index that starts the visible week. */
+  weekStart?: number
+  /** Physical direction used to map left/right keyboard navigation. */
+  direction?: 'ltr' | 'rtl'
   /** The grid to render. The parent owns the selection and computes it. */
   weeks: CalendarPanelCell[][]
   /** Label for the optional Today/Now action button between prev/next. Empty/undefined hides it. */
   todayLabel?: string
+  /** Disable month navigation at the supported calendar bounds. */
+  prevDisabled?: boolean
+  nextDisabled?: boolean
   /** Hide the prev nav button — used in dual-pane right side. */
   hidePrev?: boolean
   /** Hide the next nav button — used in dual-pane left side. */

@@ -79,6 +79,9 @@ export interface CommonDatePickerProps extends InputLabelingProps {
 export interface DatePickerProps extends CommonDatePickerProps {
   /** Controlled value for the picker. */
   modelValue?: string
+
+  /** Calendar used to present dates. Values remain Gregorian `YYYY-MM-DD`. */
+  calendar?: 'gregorian' | 'persian'
 }
 
 /** A range value: a `[from, to]` tuple in `YYYY-MM-DD` format, or `[]` when cleared. */
@@ -92,6 +95,9 @@ export interface DateRangePickerProps extends CommonDatePickerProps {
    * through the model fail to type-check.
    */
   modelValue?: DateRangeValue
+
+  /** Calendar used to present dates. Values remain Gregorian `YYYY-MM-DD`. */
+  calendar?: 'gregorian' | 'persian'
 
   /** Render two calendar panels side by side (current month + next month). */
   dualPane?: boolean

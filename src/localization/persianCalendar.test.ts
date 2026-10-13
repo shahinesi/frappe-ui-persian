@@ -3,6 +3,8 @@ import {
   getISODateFromPersianDate,
   getPersianCalendarMonth,
   getPersianDateFromISO,
+  formatPersianDate,
+  parsePersianDate,
 } from 'frappe-ui/localization'
 
 describe('Persian calendar conversion', () => {
@@ -68,5 +70,20 @@ describe('getPersianCalendarMonth', () => {
     expect(faNowruz?.dayLabel).toBe('۱')
     expect(enNowruz?.dayLabel).toBe('1')
     expect(faNowruz?.isoDate).toBe(enNowruz?.isoDate)
+  })
+})
+
+describe('Persian date presentation', () => {
+  it('formats and parses Jalali input while preserving its Gregorian ISO value', () => {
+    const iso = '2027-01-01'
+
+    expect(getPersianDateFromISO(iso)).toEqual({ year: 1405, month: 10, day: 11 })
+    expect(formatPersianDate(iso, 'fa-IR')).toBe('۱۴۰۵/۱۰/۱۱')
+    expect(formatPersianDate(iso, 'en-US')).toBe('1405/10/11')
+    expect(parsePersianDate('۱۴۰۵/۱۰/۱۱')).toBe(iso)
+    expect(parsePersianDate('١٤٠٥/١٠/١١')).toBe(iso)
+    expect(parsePersianDate('۱۱ دی ۱۴۰۵', 'DD MMMM YYYY', 'fa-IR')).toBe(iso)
+    expect(parsePersianDate('11/10/1405', 'DD/MM/YYYY')).toBe(iso)
+    expect(parsePersianDate('۱۴۰۵/۱۲/۳۰')).toBeNull()
   })
 })

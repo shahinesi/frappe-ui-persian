@@ -44,6 +44,11 @@ the range into "Depart" and "Return" fields over one calendar.
 `format` changes only the text shown in the input, not the value. Type a range
 with `DateRangeValue`, exported from `frappe-ui`.
 
+Set `calendar="persian"` on `DatePicker` or `DateRangePicker` to display and
+type dates using the Jalali calendar. The model, `min`/`max`, selection events,
+and unavailable-date callback continue to use Gregorian ISO dates. Numeric
+formats and `MMMM` month names are accepted for typed Jalali dates.
+
 ### Limits
 
 `min` and `max` take `'YYYY-MM-DD'`. `DateTimePicker` also takes

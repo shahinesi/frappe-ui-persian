@@ -79,6 +79,24 @@ const getDateFromDay = (day: number) => {
 }
 
 describe('DateRangePicker', () => {
+  it('presents Jalali range endpoints but keeps the model Gregorian ISO', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    cy.mount(DateRangePicker, {
+      props: {
+        calendar: 'persian',
+        modelValue: ['2027-01-01', '2027-01-03'],
+      },
+    })
+
+    cy.get('input').should('have.value', '۱۴۰۵/۱۰/۱۱ تا ۱۴۰۵/۱۰/۱۳').dblclick()
+    cy.get('[data-value="2027-01-01"]').should('exist')
+    cy.get('[data-value="2027-01-03"]').should('exist')
+    cy.get('[role=grid]').find('div').first().should('contain.text', 'شنبه')
+  })
+
   it('renders', () => {
     cy.mount(DateRangePicker)
 

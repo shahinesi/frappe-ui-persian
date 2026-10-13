@@ -48,6 +48,27 @@ const getTodaysDate = () => {
 }
 
 describe('DatePicker', () => {
+  it('presents a Persian date while emitting the selected Gregorian ISO value', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DatePicker, {
+      props: {
+        calendar: 'persian',
+        modelValue: '2027-01-01',
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+
+    cy.get('input').should('have.value', '۱۴۰۵/۱۰/۱۱').dblclick()
+    cy.get('[role=grid]').find('div').first().should('contain.text', 'شنبه')
+    cy.get('[data-value="2027-01-02"]').click()
+    cy.get('@updateModel').should('have.been.calledWith', '2027-01-02')
+    cy.get('input').should('have.value', '۱۴۰۵/۱۰/۱۲')
+  })
+
   it('renders', () => {
     cy.mount(DatePicker)
 

@@ -76,12 +76,13 @@ export function formatPersianDate(
     YYYY: digits.format(date.year),
     YY: digits.format(date.year % 100).padStart(2, zero),
     MMMM: monthName,
+    MMM: getPersianMonthName(date.year, date.month, locale, 'short'),
     MM: pad(date.month),
     M: digits.format(date.month),
     DD: pad(date.day),
     D: digits.format(date.day),
   }
-  return format.replace(/YYYY|MMMM|YY|MM|DD|M|D/g, (token) => tokens[token])
+  return format.replace(/YYYY|MMMM|MMM|YY|MM|DD|M|D/g, (token) => tokens[token])
 }
 
 /** Return one localized Persian-calendar month name without building its grid. */
@@ -89,11 +90,12 @@ export function getPersianMonthName(
   year: number,
   month: number,
   locale = documentLocale(),
+  style: 'long' | 'short' = 'long',
 ): string {
   const firstISO = getISODateFromPersianDate({ year, month, day: 1 })
   return new Intl.DateTimeFormat(locale, {
     calendar: 'persian',
-    month: 'long',
+    month: style,
     timeZone: 'UTC',
   }).format(parseISODate(firstISO))
 }
@@ -109,14 +111,14 @@ export function parsePersianDate(
     .replace(/[۰-۹]/g, (digit) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)))
     .replace(/[٠-٩]/g, (digit) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)))
   const parts: string[] = []
-  const pattern = format.replace(/YYYY|MMMM|YY|MM|DD|M|D|./g, (token) => {
-    if (!['YYYY', 'MMMM', 'YY', 'MM', 'M', 'DD', 'D'].includes(token)) {
+  const pattern = format.replace(/YYYY|MMMM|MMM|YY|MM|DD|M|D|./g, (token) => {
+    if (!['YYYY', 'MMMM', 'MMM', 'YY', 'MM', 'M', 'DD', 'D'].includes(token)) {
       return token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     }
     parts.push(token)
     if (token === 'YYYY') return '(\\d{4})'
     if (token === 'YY') return '(\\d{2})'
-    if (token === 'MMMM') return '(.+?)'
+    if (token === 'MMMM' || token === 'MMM') return '(.+?)'
     return '(\\d{1,2})'
   })
   const match = new RegExp(`^${pattern}$`).exec(normalized)
@@ -126,7 +128,9 @@ export function parsePersianDate(
   parts.forEach((token, index) => {
     fields[token[0]] = match[index + 1]
   })
-  let year = Number(fields.Y)
+  const currentDate = new Date()
+  const currentISO = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`
+  let year = fields.Y ? Number(fields.Y) : getPersianDateFromISO(currentISO).year
   if (!Number.isFinite(year)) return null
   if (format.includes('YY') && !format.includes('YYYY')) year += year < 50 ? 1400 : 1300
   let month = Number(fields.M)
@@ -134,9 +138,10 @@ export function parsePersianDate(
     const requestedMonth = fields.M.trim().toLocaleLowerCase(locale)
     try {
       month = Array.from({ length: 12 }, (_, index) => index + 1).find(
-        (candidate) =>
-          getPersianMonthName(year, candidate, locale).toLocaleLowerCase(locale) ===
-          requestedMonth,
+        (candidate) => [
+          getPersianMonthName(year, candidate, locale, 'long'),
+          getPersianMonthName(year, candidate, locale, 'short'),
+        ].some((name) => name.toLocaleLowerCase(locale) === requestedMonth),
       ) ?? Number.NaN
     } catch {
       return null

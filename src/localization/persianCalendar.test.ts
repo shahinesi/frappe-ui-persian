@@ -83,6 +83,8 @@ describe('Persian date presentation', () => {
     expect(parsePersianDate('۱۴۰۵/۱۰/۱۱')).toBe(iso)
     expect(parsePersianDate('١٤٠٥/١٠/١١')).toBe(iso)
     expect(parsePersianDate('۱۱ دی ۱۴۰۵', 'DD MMMM YYYY', 'fa-IR')).toBe(iso)
+    expect(formatPersianDate(iso, 'en-US', 'MMM D')).toBe('Dey 11')
+    expect(parsePersianDate('Dey 11', 'MMM D', 'en-US')).toBe(iso)
     expect(parsePersianDate('11/10/1405', 'DD/MM/YYYY')).toBe(iso)
     expect(parsePersianDate('۱۴۰۵/۱۲/۳۰')).toBeNull()
   })

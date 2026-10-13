@@ -52,7 +52,8 @@ controls when a form needs open-ended date filters.
 Set `calendar="persian"` on `DatePicker` or `DateRangePicker` to display and
 type dates using the Jalali calendar. The model, `min`/`max`, selection events,
 and unavailable-date callback continue to use Gregorian ISO dates. Numeric
-formats and `MMMM` month names are accepted for typed Jalali dates.
+formats and `MMM`/`MMMM` Jalali month names are accepted for typed dates; a
+format without a year uses the current Jalali year when parsing.
 
 ### Limits
 

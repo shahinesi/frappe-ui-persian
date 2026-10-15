@@ -240,6 +240,68 @@ describe('DateRangePicker', () => {
     })
   })
 
+  it(
+    'switches the automatic calendar with the document locale and keeps ISO endpoints',
+    () => {
+      cy.clock(Date.UTC(2026, 9, 15, 12))
+      cy.document().then((document) => {
+        document.documentElement.lang = 'fa-IR'
+        document.documentElement.dir = 'rtl'
+      })
+      const onUpdate = cy.stub().as('updateModel')
+      cy.mount(DateRangePicker, {
+        props: {
+          modelValue: ['2026-10-01', '2026-10-02'],
+          open: true,
+          'onUpdate:modelValue': onUpdate,
+        },
+      })
+
+      cy.get('[aria-label="cycle-calendar-view"]')
+        .first()
+        .should('have.text', 'مهر ۱۴۰۵')
+      cy.get('[title="شنبه"]').first().should('have.text', 'ش')
+      cy.get('[data-value="2026-10-01"]').should(
+        'have.attr',
+        'aria-selected',
+        'true',
+      )
+
+      cy.document().then((document) => {
+        document.documentElement.lang = 'en-US'
+        document.documentElement.dir = 'ltr'
+      })
+      cy.get('[aria-label="cycle-calendar-view"]')
+        .first()
+        .should('have.text', 'Oct 2026')
+      cy.get('[role=grid] > div')
+        .first()
+        .find('div')
+        .first()
+        .should('have.text', 'S')
+      cy.get('[data-value="2026-10-01"]').should(
+        'have.attr',
+        'aria-selected',
+        'true',
+      )
+
+      cy.document().then((document) => {
+        document.documentElement.lang = 'fa-IR'
+        document.documentElement.dir = 'rtl'
+      })
+      cy.get('[aria-label="cycle-calendar-view"]')
+        .first()
+        .should('have.text', 'مهر ۱۴۰۵')
+      cy.get('[title="شنبه"]').first().should('have.text', 'ش')
+      cy.get('[data-value="2026-10-02"]').should(
+        'have.attr',
+        'aria-selected',
+        'true',
+      )
+      cy.get('@updateModel').should('not.have.been.called')
+    },
+  )
+
   it('supports a localized today label and placeholder', () => {
     cy.mount(DateRangePicker, {
       props: { todayLabel: 'امروز', placeholder: 'انتخاب بازه' },

@@ -81,6 +81,60 @@ describe('DateTimePicker', () => {
     )
   })
 
+  it('formats and parses Persian date-time input while keeping the model Gregorian', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DateTimePicker, {
+      props: {
+        modelValue: '2026-10-01 12:30:00',
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+
+    cy.get('input')
+      .first()
+      .should('have.value', '۱۴۰۵/۰۷/۰۹ ۱۲:۳۰:۰۰')
+      .clear()
+      .type('۱۴۰۵/۰۷/۱۰ ۱۲:۳۱:۰۵')
+      .blur()
+
+    cy.get('@updateModel').should(
+      'have.been.calledWith',
+      '2026-10-02 12:31:05',
+    )
+    cy.get('input').first().should('have.value', '۱۴۰۵/۰۷/۱۰ ۱۲:۳۱:۰۵')
+  })
+
+  it('reactively localizes the DateTimePicker trigger without changing its ISO model', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DateTimePicker, {
+      props: {
+        modelValue: '2026-10-01 12:30:00',
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+
+    cy.get('input').first().should('have.value', '۱۴۰۵/۰۷/۰۹ ۱۲:۳۰:۰۰')
+    cy.document().then((document) => {
+      document.documentElement.lang = 'en-US'
+      document.documentElement.dir = 'ltr'
+    })
+    cy.get('input').first().should('have.value', '2026-10-01 12:30:00')
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    cy.get('input').first().should('have.value', '۱۴۰۵/۰۷/۰۹ ۱۲:۳۰:۰۰')
+    cy.get('@updateModel').should('not.have.been.called')
+  })
+
   it('supports an explicit Gregorian calendar in a Persian locale', () => {
     cy.document().then((document) => {
       document.documentElement.lang = 'fa-IR'
@@ -89,6 +143,7 @@ describe('DateTimePicker', () => {
     cy.mount(DateTimePicker, {
       props: { calendar: 'gregorian', modelValue: '2026-10-01 12:30:00' },
     })
+    cy.get('input').first().should('have.value', '2026-10-01 12:30:00')
     cy.get('input').first().dblclick()
     cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'Oct 2026')
   })
@@ -106,6 +161,7 @@ describe('DateTimePicker', () => {
         'onUpdate:modelValue': onUpdate,
       },
     })
+    cy.get('input').first().should('have.value', '1405/07/09 12:30:00')
     cy.get('input').first().dblclick()
     // The explicit prop selects the calendar system; labels and digits remain
     // localized to the active English document locale.

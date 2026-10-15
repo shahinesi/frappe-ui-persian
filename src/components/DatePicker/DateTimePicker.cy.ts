@@ -64,6 +64,23 @@ describe('DateTimePicker', () => {
     cy.get('@updateModel').should('have.been.calledWith', '2026-10-02 12:30:00')
   })
 
+  it('uses the Gregorian calendar automatically in an English locale', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'en-US'
+      document.documentElement.dir = 'ltr'
+    })
+    cy.mount(DateTimePicker, {
+      props: { modelValue: '2026-10-01 12:30:00' },
+    })
+    cy.get('input').first().dblclick()
+    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'Oct 2026')
+    cy.get('[data-value="2026-10-01"]').should(
+      'have.attr',
+      'aria-selected',
+      'true',
+    )
+  })
+
   it('supports an explicit Gregorian calendar in a Persian locale', () => {
     cy.document().then((document) => {
       document.documentElement.lang = 'fa-IR'
@@ -81,11 +98,29 @@ describe('DateTimePicker', () => {
       document.documentElement.lang = 'en-US'
       document.documentElement.dir = 'ltr'
     })
+    const onUpdate = cy.stub().as('updateModel')
     cy.mount(DateTimePicker, {
-      props: { calendar: 'persian', modelValue: '2026-10-01 12:30:00' },
+      props: {
+        calendar: 'persian',
+        modelValue: '2026-10-01 12:30:00',
+        'onUpdate:modelValue': onUpdate,
+      },
     })
     cy.get('input').first().dblclick()
-    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'مهر ۱۴۰۵')
+    // The explicit prop selects the calendar system; labels and digits remain
+    // localized to the active English document locale.
+    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'Mehr 1405')
+    cy.document().its('documentElement.lang').should('equal', 'en-US')
+    cy.get('[data-value="2026-10-01"]').should(
+      'have.attr',
+      'aria-selected',
+      'true',
+    )
+    cy.get('[data-value="2026-10-02"]').click()
+    cy.get('@updateModel').should(
+      'have.been.calledWith',
+      '2026-10-02 12:30:00',
+    )
   })
 
   it('Now button selects current date and time, and closes', () => {

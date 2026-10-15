@@ -124,7 +124,7 @@
   },
   {
     name: 'calendar',
-    description: 'Calendar for presentation. Defaults to Persian for `fa` locales and Gregorian otherwise.',
+    description: 'Calendar system for presentation. Labels and digits follow the document locale. Defaults to Persian for `fa` locales and Gregorian otherwise.',
     required: false,
     type: 'CalendarPreference',
     default: '"auto"'
@@ -346,7 +346,7 @@
   },
   {
     name: 'calendar',
-    description: 'Calendar for presentation. Defaults to Persian for `fa` locales and Gregorian otherwise.',
+    description: 'Calendar system for presentation. Labels and digits follow the document locale. Defaults to Persian for `fa` locales and Gregorian otherwise.',
     required: false,
     type: 'CalendarPreference',
     default: '"auto"'
@@ -572,6 +572,13 @@
     required: false,
     type: 'string',
     default: '""'
+  },
+  {
+    name: 'calendar',
+    description: 'Calendar system for presentation. Labels and digits follow the document locale. Defaults to Persian for `fa` locales and Gregorian otherwise.',
+    required: false,
+    type: 'CalendarPreference',
+    default: '"auto"'
   },
   {
     name: 'label',

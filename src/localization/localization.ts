@@ -4,6 +4,8 @@ import {
   documentDir,
   documentLocale,
 } from '#utils/documentAttributes'
+export { resolveCalendar } from './calendar'
+export type { CalendarPreference, ResolvedCalendar } from './calendar'
 
 /** Reactive language and direction declared on `document.documentElement`. */
 export interface DocumentLocale {

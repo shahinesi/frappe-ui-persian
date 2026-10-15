@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import {
   formatLocaleDate,
   formatLocaleNumber,
+  resolveCalendar,
   useDocumentLocale,
 } from './localization'
 
@@ -37,6 +38,20 @@ describe('useDocumentLocale', () => {
 
     expect(stopLocale).toBe('en-US')
     expect(seen).toEqual(['de-DE', 'rtl'])
+  })
+})
+
+describe('resolveCalendar', () => {
+  it('defaults Persian locales to the Persian calendar and others to Gregorian', () => {
+    expect(resolveCalendar(undefined, 'fa-IR')).toBe('persian')
+    expect(resolveCalendar('auto', 'fa-AF')).toBe('persian')
+    expect(resolveCalendar('auto', 'en-US')).toBe('gregorian')
+    expect(resolveCalendar('auto', 'fr-FR')).toBe('gregorian')
+  })
+
+  it('allows an explicit calendar to override the locale', () => {
+    expect(resolveCalendar('gregorian', 'fa-IR')).toBe('gregorian')
+    expect(resolveCalendar('persian', 'en-US')).toBe('persian')
   })
 })
 

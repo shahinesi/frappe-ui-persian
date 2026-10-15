@@ -5,7 +5,7 @@ import {
   getPersianDateFromISO,
   formatPersianDate,
   parsePersianDate,
-} from 'frappe-ui/localization'
+} from 'frappe-ui/localization/calendar'
 
 describe('Persian calendar conversion', () => {
   it('round trips Nowruz using Gregorian ISO values', () => {
@@ -42,7 +42,8 @@ describe('getPersianCalendarMonth', () => {
     expect(calendar.yearLabel).toBe('۱۴۰۴')
     expect(calendar.weeks).toHaveLength(6)
     expect(calendar.weeks.every((week) => week.length === 7)).toBe(true)
-    expect(calendar.weekdayLabels[0]).toBe('شنبه')
+    expect(calendar.weekdayLabels).toEqual(['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'])
+    expect(calendar.weekdayAriaLabels[0]).toBe('شنبه')
     expect(calendar.weeks[0][0].isoDate).toBe('2025-03-15')
     expect(calendar.weeks[0][0].weekday).toBe(0)
     expect(cells.find((cell) => cell.isCurrentMonth)?.isoDate).toBe(

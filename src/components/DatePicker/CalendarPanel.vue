@@ -70,11 +70,15 @@
       >
         <div
           class="flex items-center text-xs-medium uppercase text-ink-gray-4 mb-1 gap-0.5"
+          role="row"
         >
           <div
             v-for="(d, di) in weekdayLabels"
             :key="di"
             class="flex size-7 items-center justify-center"
+            role="columnheader"
+            :aria-label="weekdayAriaLabels?.[di] ?? d"
+            :title="weekdayAriaLabels?.[di] ?? d"
           >
             {{ d }}
           </div>
@@ -418,6 +422,7 @@ defineExpose<CalendarPanelExposed>({ focusInitialCell })
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 const weekdayLabels = computed(() => props.weekdayLabels ?? WEEKDAYS)
+const weekdayAriaLabels = computed(() => props.weekdayAriaLabels)
 const displayMonths = computed(() => props.monthLabels ?? months)
 const heading = computed(
   () =>

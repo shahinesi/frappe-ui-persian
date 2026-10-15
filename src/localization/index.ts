@@ -17,3 +17,5 @@ export {
   type PersianCalendarDate,
   type PersianCalendarMonth,
 } from './persianCalendar'
+export { resolveCalendar } from './calendar'
+export type { CalendarPreference, ResolvedCalendar } from './calendar'

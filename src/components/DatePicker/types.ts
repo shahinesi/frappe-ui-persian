@@ -1,6 +1,7 @@
 import type { Dayjs } from 'dayjs/esm'
 import type { InputSize, InputVariant } from '../../composables/inputTypes'
 import type { InputLabelingProps } from '../../composables/useInputLabeling'
+import type { CalendarPreference } from '../../localization/calendar'
 
 // Re-exported, not redeclared: `index.ts` does `export * from './types'`, so a
 // local copy publishes a second structurally identical `PopoverSide` at the
@@ -80,8 +81,8 @@ export interface DatePickerProps extends CommonDatePickerProps {
   /** Controlled value for the picker. */
   modelValue?: string
 
-  /** Calendar used to present dates. Values remain Gregorian `YYYY-MM-DD`. */
-  calendar?: 'gregorian' | 'persian'
+  /** Calendar for presentation. Defaults to Persian for `fa` locales and Gregorian otherwise. */
+  calendar?: CalendarPreference
 
   /** Label for the action that selects today. Empty hides the action. Default: `Today`. */
   todayLabel?: string
@@ -99,8 +100,8 @@ export interface DateRangePickerProps extends CommonDatePickerProps {
    */
   modelValue?: DateRangeValue
 
-  /** Calendar used to present dates. Values remain Gregorian `YYYY-MM-DD`. */
-  calendar?: 'gregorian' | 'persian'
+  /** Calendar for presentation. Defaults to Persian for `fa` locales and Gregorian otherwise. */
+  calendar?: CalendarPreference
 
   /** Label for the action that selects today. Empty hides the action. Default: `Today`. */
   todayLabel?: string

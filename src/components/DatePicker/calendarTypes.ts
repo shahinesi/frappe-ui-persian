@@ -12,7 +12,7 @@ import type {
 
 export interface DateCalendarProps {
   /** Calendar used for presentation; emitted dates always remain Gregorian ISO. */
-  calendar?: 'gregorian' | 'persian'
+  calendar?: 'auto' | 'gregorian' | 'persian'
   /**
    * Earliest selectable date in `YYYY-MM-DD` format. Also bounds keyboard
    * navigation and the year list.
@@ -49,7 +49,7 @@ export interface DateCalendarExposed {
 
 export interface DateRangeCalendarProps {
   /** Calendar used for presentation; emitted dates always remain Gregorian ISO. */
-  calendar?: 'gregorian' | 'persian'
+  calendar?: 'auto' | 'gregorian' | 'persian'
   /**
    * Earliest selectable date in `YYYY-MM-DD` format. Also bounds keyboard
    * navigation and the year list.
@@ -114,6 +114,7 @@ export interface CalendarPanelProps {
   /** Optional display labels for a non-Gregorian calendar. */
   monthLabels?: string[]
   weekdayLabels?: string[]
+  weekdayAriaLabels?: string[]
   currentYearLabel?: string
   selectableYears?: number[]
   formatYear?: (year: number) => string

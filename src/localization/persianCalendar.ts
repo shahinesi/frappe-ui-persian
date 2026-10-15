@@ -1,4 +1,4 @@
-import { documentLocale } from '../utils/documentAttributes'
+import { readDocumentLocale } from '../utils/readDocumentLocale'
 
 /** A Persian calendar date; month is one-based (Farvardin = 1). */
 export interface PersianCalendarDate {
@@ -25,6 +25,7 @@ export interface PersianCalendarMonth {
   monthName: string
   yearLabel: string
   weekdayLabels: string[]
+  weekdayAriaLabels: string[]
   /** Six complete weeks, each with seven cells starting on Saturday. */
   weeks: PersianCalendarCell[][]
 }
@@ -63,7 +64,7 @@ export function getPersianDateFromISO(isoDate: string): PersianCalendarDate {
 /** Format a Gregorian date-only value for Persian-calendar presentation. */
 export function formatPersianDate(
   isoDate: string | null | undefined,
-  locale = documentLocale(),
+  locale = readDocumentLocale(),
   format = 'YYYY/MM/DD',
 ): string {
   if (!isoDate) return ''
@@ -89,7 +90,7 @@ export function formatPersianDate(
 export function getPersianMonthName(
   year: number,
   month: number,
-  locale = documentLocale(),
+  locale = readDocumentLocale(),
   style: 'long' | 'short' = 'long',
 ): string {
   const firstISO = getISODateFromPersianDate({ year, month, day: 1 })
@@ -104,7 +105,7 @@ export function getPersianMonthName(
 export function parsePersianDate(
   value: string,
   format = 'YYYY/MM/DD',
-  locale = documentLocale(),
+  locale = readDocumentLocale(),
 ): string | null {
   const normalized = value
     .trim()
@@ -234,15 +235,18 @@ export function getPersianCalendarMonth(
   })
   const yearFormatter = new Intl.NumberFormat(locale, { useGrouping: false })
   const weekdayFormatter = new Intl.DateTimeFormat(locale, {
-    weekday: 'short',
+    weekday: 'long',
     timeZone: 'UTC',
   })
   const firstMonthDate = parseISODate(firstISO)
   const monthName = monthFormatter.format(firstMonthDate)
-  const weekdayLabels = Array.from({ length: 7 }, (_, index) => {
+  const weekdayAriaLabels = Array.from({ length: 7 }, (_, index) => {
     // 2025-03-22 is a Saturday; indexing from it makes Saturday stable at 0.
     return weekdayFormatter.format(new Date(Date.UTC(2025, 2, 22 + index)))
   })
+  const weekdayLabels = locale.toLowerCase().startsWith('fa')
+    ? ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج']
+    : weekdayAriaLabels
   const cells = Array.from({ length: 42 }, (_, index) => {
     const date = new Date(gridStart.getTime() + index * DAY_IN_MS)
     const isoDate = toISODate(date)
@@ -262,6 +266,7 @@ export function getPersianCalendarMonth(
     monthName,
     yearLabel: yearFormatter.format(year),
     weekdayLabels,
+    weekdayAriaLabels,
     weeks: Array.from({ length: 6 }, (_, index) =>
       cells.slice(index * 7, index * 7 + 7),
     ),

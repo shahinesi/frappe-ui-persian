@@ -7,6 +7,7 @@
     :current-month="activeMonth"
     :month-labels="monthLabels"
     :weekday-labels="weekdayLabels"
+    :weekday-aria-labels="weekdayAriaLabels"
     :week-start="isPersian ? 6 : 0"
     :direction="direction"
     :selectable-years="selectableYears"
@@ -40,6 +41,7 @@ import {
   MAX_SUPPORTED_YEAR,
   MIN_SUPPORTED_YEAR,
 } from '../../localization/persianCalendar'
+import { resolveCalendar } from '../../localization/calendar'
 import { useDocumentLocale } from '../../localization/localization'
 import CalendarPanel from './CalendarPanel.vue'
 import { makeUnavailableCheck, useCalendarView } from './composables'
@@ -55,7 +57,7 @@ import type {
 
 const props = withDefaults(defineProps<DateCalendarProps>(), {
   todayLabel: 'Today',
-  calendar: 'gregorian',
+  calendar: 'auto',
 })
 
 const emit = defineEmits<DateCalendarEmits>()
@@ -65,7 +67,9 @@ const model = defineModel<string>({ default: '' })
 
 const DATE_FORMAT = 'YYYY-MM-DD'
 const { locale, direction } = useDocumentLocale()
-const isPersian = computed(() => props.calendar === 'persian')
+const isPersian = computed(
+  () => resolveCalendar(props.calendar, locale.value) === 'persian',
+)
 
 const gregorian = useCalendarView()
 const persianYear = ref(getPersianDateFromISO(dayjsLocal().format(DATE_FORMAT)).year)
@@ -185,10 +189,11 @@ const monthLabels = computed(() => {
   )
 })
 const weekdayLabels = computed(() => persianMonthData.value?.weekdayLabels)
+const weekdayAriaLabels = computed(() => persianMonthData.value?.weekdayAriaLabels)
 const yearLabel = computed(() => persianMonthData.value?.yearLabel)
 const resolvedTodayLabel = computed(
   () =>
-    props.calendar === 'persian' &&
+    isPersian.value &&
     props.todayLabel === 'Today' &&
     locale.value.startsWith('fa')
       ? 'امروز'
@@ -231,7 +236,7 @@ function seedFocus(): void {
 }
 
 watch(
-  () => [model.value, props.calendar] as const,
+  () => [model.value, props.calendar, locale.value] as const,
   ([value]) => {
     if (value === ownCommit) {
       ownCommit = null

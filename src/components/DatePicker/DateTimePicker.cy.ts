@@ -22,6 +22,13 @@ const clearSlot = {
 }
 
 describe('DateTimePicker', () => {
+  afterEach(() => {
+    cy.document().then((document) => {
+      document.documentElement.lang = ''
+      document.documentElement.dir = ''
+    })
+  })
+
   it('renders', () => {
     cy.mount(DateTimePicker)
 
@@ -37,6 +44,24 @@ describe('DateTimePicker', () => {
     cy.mount(DateTimePicker)
     cy.get('input').first().dblclick()
     cy.get('[aria-label=cycle-calendar-view]').should('exist')
+  })
+
+  it('uses the Persian calendar automatically in a Persian locale while keeping date-time values ISO', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DateTimePicker, {
+      props: {
+        modelValue: '2026-10-01 12:30:00',
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+    cy.get('input').first().dblclick()
+    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'مهر ۱۴۰۵')
+    cy.get('[data-value="2026-10-02"]').click()
+    cy.get('@updateModel').should('have.been.calledWith', '2026-10-02 12:30:00')
   })
 
   it('Now button selects current date and time, and closes', () => {

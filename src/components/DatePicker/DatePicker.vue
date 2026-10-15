@@ -92,6 +92,7 @@ import {
 } from './composables'
 import type { Dayjs } from 'dayjs/esm'
 import { formatPersianDate, parsePersianDate } from '../../localization/persianCalendar'
+import { resolveCalendar } from '../../localization/calendar'
 import { useDocumentLocale } from '../../localization/localization'
 import type { DatePickerProps, DatePickerEmits, DatePickerSlots } from './types'
 import type { DateCalendarExposed } from './calendarTypes'
@@ -110,7 +111,7 @@ const props = withDefaults(defineProps<DatePickerProps>(), {
   clearable: true,
   openOnFocus: false,
   openOnClick: true,
-  calendar: 'gregorian',
+  calendar: 'auto',
 })
 const emit = defineEmits<DatePickerEmits>()
 
@@ -177,6 +178,9 @@ const inputReadonly = useTypeable(props)
 
 const DATE_FORMAT = 'YYYY-MM-DD'
 const { locale } = useDocumentLocale()
+const isPersianCalendar = computed(
+  () => resolveCalendar(props.calendar, locale.value) === 'persian',
+)
 const selected = ref<string>('')
 const initialValue = ref(props.modelValue || '')
 
@@ -221,7 +225,7 @@ watch(
 // ── Display ──────────────────────────────────────────────────────────────────
 
 const displayLabel = computed<string>(() =>
-  props.calendar === 'persian'
+  isPersianCalendar.value
     ? formatPersianDate(selected.value, locale.value, props.format ?? 'YYYY/MM/DD')
     : props.format
       ? formatter(selected.value, props.format)
@@ -265,7 +269,7 @@ function commitInput(close = false): void {
     return
   }
   const persianISO =
-    props.calendar === 'persian'
+    isPersianCalendar.value
       ? parsePersianDate(raw, props.format ?? 'YYYY/MM/DD', locale.value)
       : null
   const d = persianISO ? dayjs(persianISO) : coerceToDayjs(raw)

@@ -83,6 +83,7 @@
 import { ref, computed, nextTick, watch } from 'vue'
 import { dayjs } from '../../utils/dayjs'
 import { formatPersianDate, parsePersianDate } from '../../localization/persianCalendar'
+import { resolveCalendar } from '../../localization/calendar'
 import { useDocumentLocale } from '../../localization/localization'
 import { orderRange, rangeKey, stepRange } from './utils'
 import DateRangeCalendar from './DateRangeCalendar.vue'
@@ -118,7 +119,7 @@ const props = withDefaults(defineProps<DateRangePickerProps>(), {
   dualPane: false,
   openOnFocus: false,
   openOnClick: true,
-  calendar: 'gregorian',
+  calendar: 'auto',
 })
 const emit = defineEmits<DateRangePickerEmits>()
 
@@ -185,6 +186,9 @@ const inputReadonly = useTypeable(props)
 
 const DATE_FORMAT = 'YYYY-MM-DD'
 const { locale } = useDocumentLocale()
+const isPersianCalendar = computed(
+  () => resolveCalendar(props.calendar, locale.value) === 'persian',
+)
 const fromDate = ref<string>('')
 const toDate = ref<string>('')
 
@@ -217,7 +221,7 @@ function parseRangeInput(raw: string): [Dayjs | null, Dayjs | null] {
   if (!parts.length) return [null, null]
   const parse = (value?: string) => {
     if (!value) return null
-    if (props.calendar === 'persian') {
+    if (isPersianCalendar.value) {
       const isoDate = parsePersianDate(value, props.format ?? 'YYYY/MM/DD', locale.value)
       return isoDate ? dayjs(isoDate) : coerceToDayjs(value)
     }
@@ -259,7 +263,7 @@ const displayLabel = computed<string>(() =>
 
 function formatOne(dateStr: string): string {
   if (!dateStr) return ''
-  if (props.calendar === 'persian') {
+  if (isPersianCalendar.value) {
     return formatPersianDate(dateStr, locale.value, props.format ?? 'YYYY/MM/DD')
   }
   const d = dayjs(dateStr)

@@ -124,10 +124,10 @@
   },
   {
     name: 'calendar',
-    description: 'Calendar used to present dates. Values remain Gregorian `YYYY-MM-DD`.',
+    description: 'Calendar used for presentation. Defaults to Persian for `fa` locales and Gregorian otherwise. Values remain Gregorian `YYYY-MM-DD`.',
     required: false,
-    type: '"gregorian" | "persian"',
-    default: '"gregorian"'
+    type: '"auto" | "gregorian" | "persian"',
+    default: '"auto"'
   },
   {
     name: 'modelValue',
@@ -346,10 +346,10 @@
   },
   {
     name: 'calendar',
-    description: 'Calendar used to present dates. Values remain Gregorian `YYYY-MM-DD`.',
+    description: 'Calendar used for presentation. Defaults to Persian for `fa` locales and Gregorian otherwise. Values remain Gregorian `YYYY-MM-DD`.',
     required: false,
-    type: '"gregorian" | "persian"',
-    default: '"gregorian"'
+    type: '"auto" | "gregorian" | "persian"',
+    default: '"auto"'
   },
   {
     name: 'modelValue',

@@ -11,6 +11,7 @@
       :current-month="activeMonth"
       :month-labels="monthLabels"
       :weekday-labels="weekdayLabels"
+      :weekday-aria-labels="weekdayAriaLabels"
       :week-start="isPersian ? 6 : 0"
       :direction="direction"
       :selectable-years="selectableYears"
@@ -44,6 +45,7 @@
       :current-month="rightMonth"
       :month-labels="monthLabels"
       :weekday-labels="weekdayLabels"
+      :weekday-aria-labels="weekdayAriaLabels"
       :week-start="isPersian ? 6 : 0"
       :direction="direction"
       :selectable-years="selectableYears"
@@ -76,6 +78,7 @@ import {
   MAX_SUPPORTED_YEAR,
   MIN_SUPPORTED_YEAR,
 } from '../../localization/persianCalendar'
+import { resolveCalendar } from '../../localization/calendar'
 import { useDocumentLocale } from '../../localization/localization'
 import CalendarPanel from './CalendarPanel.vue'
 import { makeUnavailableCheck, useCalendarView } from './composables'
@@ -93,13 +96,15 @@ import type { DateRangeValue } from './types'
 const props = withDefaults(defineProps<DateRangeCalendarProps>(), {
   todayLabel: 'Today',
   dualPane: false,
-  calendar: 'gregorian',
+  calendar: 'auto',
 })
 const emit = defineEmits<DateRangeCalendarEmits>()
 const model = defineModel<DateRangeValue>({ default: () => [] })
 const DATE_FORMAT = 'YYYY-MM-DD'
 const { locale, direction } = useDocumentLocale()
-const isPersian = computed(() => props.calendar === 'persian')
+const isPersian = computed(
+  () => resolveCalendar(props.calendar, locale.value) === 'persian',
+)
 const gregorian = useCalendarView()
 const nowPersian = getPersianDateFromISO(dayjsLocal().format(DATE_FORMAT))
 const persianYear = ref(nowPersian.year)
@@ -229,6 +234,7 @@ const monthLabels = computed(() => isPersian.value
   ? Array.from({ length: 12 }, (_, index) => getPersianMonthName(activeYear.value, index + 1, locale.value))
   : undefined)
 const weekdayLabels = computed(() => currentMonthData.value?.weekdayLabels)
+const weekdayAriaLabels = computed(() => currentMonthData.value?.weekdayAriaLabels)
 const yearLabel = computed(() => currentMonthData.value?.yearLabel)
 const rightYearLabel = computed(() => rightMonthData.value?.yearLabel)
 const formatYear = computed(() => isPersian.value
@@ -270,7 +276,7 @@ function seedFocus(): void {
 }
 
 watch(
-  () => [rangeKey(model.value), props.calendar] as const,
+  () => [rangeKey(model.value), props.calendar, locale.value] as const,
   ([key]) => {
     if (key === ownKey) {
       ownKey = null

@@ -93,7 +93,6 @@ describe('DateRangePicker', () => {
     })
     cy.mount(DateRangePicker, {
       props: {
-        calendar: 'persian',
         modelValue: ['2027-01-01', '2027-01-03'],
       },
     })
@@ -101,7 +100,7 @@ describe('DateRangePicker', () => {
     cy.get('input').should('have.value', '۱۴۰۵/۱۰/۱۱ تا ۱۴۰۵/۱۰/۱۳').dblclick()
     cy.get('[data-value="2027-01-01"]').should('exist')
     cy.get('[data-value="2027-01-03"]').should('exist')
-    cy.get('[role=grid]').find('div').first().should('contain.text', 'شنبه')
+    cy.get('[title="شنبه"]').should('have.text', 'ش')
   })
 
   it('renders the Persian month and Saturday-first days while emitting ISO dates', () => {
@@ -121,22 +120,27 @@ describe('DateRangePicker', () => {
 
     cy.get('input').dblclick()
     cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'مهر ۱۴۰۵')
-    cy.get('[role=grid] > div')
-      .first()
-      .find('div')
-      .first()
-      .should('have.text', 'شنبه')
-    cy.get('[role=grid] > div')
-      .first()
-      .find('div')
-      .last()
-      .should('have.text', 'جمعه')
+    cy.get('[title="شنبه"]').should('have.text', 'ش')
+    cy.get('[title="جمعه"]').should('have.text', 'ج')
     cy.get('[data-value="2026-10-01"]').click()
     cy.get('[data-value="2026-10-02"]').click()
     cy.get('@updateModel').should('have.been.calledWith', [
       '2026-10-01',
       '2026-10-02',
     ])
+  })
+
+  it('uses Persian month labels by locale and does not mix Gregorian month names with Jalali years', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    cy.mount(DateRangePicker, {
+      props: { modelValue: ['2026-10-01', '2026-10-02'] },
+    })
+    cy.get('input').dblclick()
+    cy.get('[aria-label="cycle-calendar-view"]').first().should('have.text', 'مهر ۱۴۰۵')
+    cy.get('[title="شنبه"]').first().should('have.text', 'ش')
   })
 
   it('keeps English Gregorian labels and ISO values in English mode', () => {
@@ -192,11 +196,7 @@ describe('DateRangePicker', () => {
         'have.text',
         'مهر ۱۴۰۵',
       )
-      cy.get('[role=grid] > div')
-        .first()
-        .find('div')
-        .first()
-        .should('have.text', 'شنبه')
+      cy.get('[title="شنبه"]').should('have.text', 'ش')
       cy.get('[data-value="2026-10-01"]').should(
         'have.attr',
         'aria-selected',
@@ -231,11 +231,7 @@ describe('DateRangePicker', () => {
         'have.text',
         'مهر ۱۴۰۵',
       )
-      cy.get('[role=grid] > div')
-        .first()
-        .find('div')
-        .first()
-        .should('have.text', 'شنبه')
+      cy.get('[title="شنبه"]').should('have.text', 'ش')
       cy.get('[data-value="2026-10-02"]').should(
         'have.attr',
         'aria-selected',

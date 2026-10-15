@@ -139,27 +139,6 @@ describe('DateRangePicker', () => {
     ])
   })
 
-  it('opens the Persian month/year selector and changes the Jalali year', () => {
-    cy.clock(Date.UTC(2026, 9, 15, 12))
-    cy.document().then((document) => {
-      document.documentElement.lang = 'fa-IR'
-      document.documentElement.dir = 'rtl'
-    })
-    cy.mount(DateRangePicker, {
-      props: { calendar: 'persian', modelValue: [], open: true },
-    })
-
-    cy.get('[aria-label=cycle-calendar-view]').click()
-    cy.get('[aria-label="Select month and year"]').should('be.visible')
-    cy.get('[role=listbox][aria-label="Select year"]')
-      .contains('button', '۱۴۰۴')
-      .click()
-    cy.get('[role=listbox][aria-label="Select month"]')
-      .contains('button', 'مهر')
-      .click()
-    cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'مهر ۱۴۰۴')
-  })
-
   it('keeps English Gregorian labels and ISO values in English mode', () => {
     cy.clock(Date.UTC(2026, 9, 15, 12))
     cy.document().then((document) => {

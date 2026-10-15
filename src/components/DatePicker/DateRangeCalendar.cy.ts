@@ -52,6 +52,25 @@ describe('DateRangeCalendar', () => {
     cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'Jun 2025')
   })
 
+  it('changes the Jalali year and month from the shared calendar view', () => {
+    cy.clock(Date.UTC(2026, 9, 15, 12))
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    mountCalendar(['2026-10-15', '2026-10-15'], { calendar: 'persian' })
+
+    cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'مهر ۱۴۰۵')
+    cy.get('[aria-label=cycle-calendar-view]').click()
+    cy.get('[role=listbox][aria-label="Select year"]')
+      .contains('button', '۱۴۰۴')
+      .click()
+    cy.get('[role=listbox][aria-label="Select month"]')
+      .contains('button', 'مهر')
+      .click()
+    cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'مهر ۱۴۰۴')
+  })
+
   it('first click opens the range, second closes it', () => {
     mountCalendar(['2025-06-10', '2025-06-15'])
     cy.get('[aria-label="2025-06-12"]').click()

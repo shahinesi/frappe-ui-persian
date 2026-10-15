@@ -174,6 +174,76 @@ describe('DateRangePicker', () => {
     ])
   })
 
+  it('keeps the open calendar coherent when the document locale changes', () => {
+    cy.clock(Date.UTC(2026, 9, 15, 12))
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+
+    cy.mount(DateRangePicker, {
+      props: {
+        calendar: 'persian',
+        modelValue: ['2026-10-01', '2026-10-02'],
+        open: true,
+      },
+    }).then(({ wrapper }) => {
+      cy.get('[aria-label=cycle-calendar-view]').should(
+        'have.text',
+        'مهر ۱۴۰۵',
+      )
+      cy.get('[role=grid] > div')
+        .first()
+        .find('div')
+        .first()
+        .should('have.text', 'شنبه')
+      cy.get('[data-value="2026-10-01"]').should(
+        'have.attr',
+        'aria-selected',
+        'true',
+      )
+
+      cy.document().then((document) => {
+        document.documentElement.lang = 'en'
+        document.documentElement.dir = 'ltr'
+      })
+      cy.then(() => wrapper.setProps({ calendar: 'gregorian' }))
+
+      cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'Oct 2026')
+      cy.get('[role=grid] > div')
+        .first()
+        .find('div')
+        .first()
+        .should('have.text', 'S')
+      cy.get('[data-value="2026-10-01"]').should(
+        'have.attr',
+        'aria-selected',
+        'true',
+      )
+
+      cy.document().then((document) => {
+        document.documentElement.lang = 'fa-IR'
+        document.documentElement.dir = 'rtl'
+      })
+      cy.then(() => wrapper.setProps({ calendar: 'persian' }))
+
+      cy.get('[aria-label=cycle-calendar-view]').should(
+        'have.text',
+        'مهر ۱۴۰۵',
+      )
+      cy.get('[role=grid] > div')
+        .first()
+        .find('div')
+        .first()
+        .should('have.text', 'شنبه')
+      cy.get('[data-value="2026-10-02"]').should(
+        'have.attr',
+        'aria-selected',
+        'true',
+      )
+    })
+  })
+
   it('supports a localized today label and placeholder', () => {
     cy.mount(DateRangePicker, {
       props: { todayLabel: 'امروز', placeholder: 'انتخاب بازه' },

@@ -367,15 +367,18 @@ function parsePersianDateTimeInput(
   raw: string,
   activeLocale: string,
 ): Dayjs | null {
-  const match = /^(.+?)(?:\s+(\d{1,2}:\d{2}(?::\d{2})?))?$/.exec(raw)
+  const normalized = raw
+    .replace(/[۰-۹]/g, (digit) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)))
+    .replace(/[٠-٩]/g, (digit) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)))
+  const match = /^(.+?)(?:\s+(\d{1,2}:\d{2}(?::\d{2})?))?$/.exec(
+    normalized,
+  )
   if (!match) return null
 
   const isoDate = parsePersianDate(match[1], 'YYYY/MM/DD', activeLocale)
   if (!isoDate) return null
 
-  const time = (match[2] ?? '00:00:00')
-    .replace(/[۰-۹]/g, (digit) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)))
-    .replace(/[٠-٩]/g, (digit) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)))
+  const time = match[2] ?? '00:00:00'
   const normalizedTime = time.length === 5 ? `${time}:00` : time
   if (!/^\d{2}:\d{2}:\d{2}$/.test(normalizedTime)) return null
   const [hours, minutes, seconds] = normalizedTime.split(':').map(Number)

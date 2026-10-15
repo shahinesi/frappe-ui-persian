@@ -123,6 +123,68 @@ describe('DateTimePicker', () => {
     )
   })
 
+  it('updates the automatic calendar when the document language changes', () => {
+    cy.clock(Date.UTC(2026, 9, 15, 12))
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DateTimePicker, {
+      props: {
+        modelValue: '2026-10-01 12:30:00',
+        open: true,
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+
+    cy.get('[aria-label="cycle-calendar-view"]').should(
+      'have.text',
+      'مهر ۱۴۰۵',
+    )
+    cy.get('[title="شنبه"]').should('have.text', 'ش')
+    cy.get('[data-value="2026-10-01"]').should(
+      'have.attr',
+      'aria-selected',
+      'true',
+    )
+
+    cy.document().then((document) => {
+      document.documentElement.lang = 'en-US'
+      document.documentElement.dir = 'ltr'
+    })
+    cy.get('[aria-label="cycle-calendar-view"]').should(
+      'have.text',
+      'Oct 2026',
+    )
+    cy.get('[role=grid] > div')
+      .first()
+      .find('div')
+      .first()
+      .should('have.text', 'S')
+    cy.get('[data-value="2026-10-01"]').should(
+      'have.attr',
+      'aria-selected',
+      'true',
+    )
+
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    cy.get('[aria-label="cycle-calendar-view"]').should(
+      'have.text',
+      'مهر ۱۴۰۵',
+    )
+    cy.get('[title="شنبه"]').should('have.text', 'ش')
+    cy.get('[data-value="2026-10-01"]').should(
+      'have.attr',
+      'aria-selected',
+      'true',
+    )
+    cy.get('@updateModel').should('not.have.been.called')
+  })
+
   it('Now button selects current date and time, and closes', () => {
     cy.mount(DateTimePicker, {
       props: { 'onUpdate:modelValue': cy.spy().as('onUpdate') },

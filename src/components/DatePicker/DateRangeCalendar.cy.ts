@@ -39,6 +39,13 @@ function mountCalendar(
 }
 
 describe('DateRangeCalendar', () => {
+  beforeEach(() => {
+    cy.document().then((document) => {
+      document.documentElement.lang = ''
+      document.documentElement.dir = ''
+    })
+  })
+
   it('renders the grid inline, with no popover', () => {
     mountCalendar()
 

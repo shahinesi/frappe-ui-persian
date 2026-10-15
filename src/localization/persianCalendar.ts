@@ -208,7 +208,7 @@ export function getISODateFromPersianDate(
 export function getPersianCalendarMonth(
   year: number,
   month: number,
-  locale = documentLocale(),
+  locale = readDocumentLocale(),
 ): PersianCalendarMonth {
   if (
     !Number.isInteger(year) ||

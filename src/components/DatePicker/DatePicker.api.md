@@ -124,9 +124,9 @@
   },
   {
     name: 'calendar',
-    description: 'Calendar used for presentation. Defaults to Persian for `fa` locales and Gregorian otherwise. Values remain Gregorian `YYYY-MM-DD`.',
+    description: 'Calendar for presentation. Defaults to Persian for `fa` locales and Gregorian otherwise.',
     required: false,
-    type: '"auto" | "gregorian" | "persian"',
+    type: 'CalendarPreference',
     default: '"auto"'
   },
   {
@@ -346,9 +346,9 @@
   },
   {
     name: 'calendar',
-    description: 'Calendar used for presentation. Defaults to Persian for `fa` locales and Gregorian otherwise. Values remain Gregorian `YYYY-MM-DD`.',
+    description: 'Calendar for presentation. Defaults to Persian for `fa` locales and Gregorian otherwise.',
     required: false,
-    type: '"auto" | "gregorian" | "persian"',
+    type: 'CalendarPreference',
     default: '"auto"'
   },
   {

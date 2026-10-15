@@ -15,6 +15,13 @@ export interface DocumentLocale {
   direction: ComputedRef<'ltr' | 'rtl'>
 }
 
+/** Intl date options with an optional literal separator for separate endpoints. */
+export interface LocaleDateRangeFormatOptions
+  extends Intl.DateTimeFormatOptions {
+  /** When set, format both endpoints separately using this separator. */
+  rangeSeparator?: string
+}
+
 /**
  * Read the document's current language and direction reactively.
  *
@@ -79,6 +86,59 @@ export function formatLocaleDate(
   return new Intl.DateTimeFormat(documentLocale(), formatOptions).format(
     parsed.date,
   )
+}
+
+/**
+ * Format a date range using the document language and Intl calendar data.
+ * Date-only `YYYY-MM-DD` endpoints are interpreted as UTC calendar dates to
+ * avoid timezone day shifts. Inputs remain unchanged; invalid or absent
+ * endpoints, and reversed ranges, return an empty string.
+ */
+export function formatLocaleDateRange(
+  start: Date | string | number | null | undefined,
+  end: Date | string | number | null | undefined,
+  options: LocaleDateRangeFormatOptions = {},
+): string {
+  if (
+    start === null ||
+    start === undefined ||
+    start === '' ||
+    end === null ||
+    end === undefined ||
+    end === ''
+  ) {
+    return ''
+  }
+
+  const parsedStart = parseDisplayDate(start)
+  const parsedEnd = parseDisplayDate(end)
+  if (
+    !parsedStart ||
+    !parsedEnd ||
+    parsedStart.date.getTime() > parsedEnd.date.getTime()
+  ) {
+    return ''
+  }
+
+  const { rangeSeparator, ...dateOptions } = options
+  const hasDateOptions = Object.keys(dateOptions).length > 0
+  const formatOptions: Intl.DateTimeFormatOptions = hasDateOptions
+    ? { ...dateOptions }
+    : { dateStyle: 'medium' }
+
+  if (parsedStart.dateOnly && parsedEnd.dateOnly) {
+    formatOptions.timeZone = 'UTC'
+  } else if (!formatOptions.timeZone) {
+    formatOptions.timeZone = 'UTC'
+  }
+
+  const formatter = new Intl.DateTimeFormat(documentLocale(), formatOptions)
+  if (rangeSeparator !== undefined) {
+    return `${formatter.format(parsedStart.date)}${rangeSeparator}${formatter.format(
+      parsedEnd.date,
+    )}`
+  }
+  return formatter.formatRange(parsedStart.date, parsedEnd.date)
 }
 
 function parseDisplayDate(

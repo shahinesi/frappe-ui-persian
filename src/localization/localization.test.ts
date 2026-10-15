@@ -4,6 +4,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   formatLocaleDate,
+  formatLocaleDateRange,
   formatLocaleNumber,
   resolveCalendar,
   useDocumentLocale,
@@ -97,5 +98,46 @@ describe('formatLocaleDate', () => {
     expect(formatLocaleDate('2025-02-30')).toBe('')
     expect(formatLocaleDate('not a date')).toBe('')
     expect(formatLocaleDate(null)).toBe('')
+  })
+})
+
+describe('formatLocaleDateRange', () => {
+  it('formats Gregorian ISO date-only ranges as Persian without changing their days', () => {
+    document.documentElement.lang = 'fa-IR'
+    expect(
+      formatLocaleDateRange('2026-10-01', '2026-10-02', {
+        calendar: 'persian',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }),
+    ).toBe('۹ تا ۱۰ مهر ۱۴۰۵')
+  })
+
+  it('formats ranges in the active English locale', () => {
+    document.documentElement.lang = 'en-US'
+    expect(
+      formatLocaleDateRange('2026-10-01', '2026-10-02', {
+        month: 'short',
+        day: 'numeric',
+        rangeSeparator: ' to ',
+      }),
+    ).toBe('Oct 1 to Oct 2')
+  })
+
+  it('keeps date-only endpoints on their ISO calendar day in western timezones', () => {
+    document.documentElement.lang = 'en-US'
+    expect(
+      formatLocaleDateRange('2026-10-01', '2026-10-01', {
+        dateStyle: 'medium',
+        timeZone: 'America/Los_Angeles',
+      }),
+    ).toBe('Oct 1, 2026')
+  })
+
+  it('returns an empty string for missing, invalid, and reversed ranges', () => {
+    expect(formatLocaleDateRange(null, '2026-10-02')).toBe('')
+    expect(formatLocaleDateRange('2026-02-30', '2026-03-02')).toBe('')
+    expect(formatLocaleDateRange('2026-10-02', '2026-10-01')).toBe('')
   })
 })

@@ -1,8 +1,10 @@
 export {
   formatLocaleDate,
+  formatLocaleDateRange,
   formatLocaleNumber,
   useDocumentLocale,
   type DocumentLocale,
+  type LocaleDateRangeFormatOptions,
 } from './localization'
 export {
   getISODateFromPersianDate,

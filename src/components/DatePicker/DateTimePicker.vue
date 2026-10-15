@@ -67,6 +67,7 @@
           <DateCalendar
             ref="calendarRef"
             :model-value="selectedDate"
+            :calendar="props.calendar"
             today-label="Now"
             :min="resolvedMin"
             :max="resolvedMax"
@@ -126,6 +127,7 @@ const props = withDefaults(defineProps<DateTimePickerProps>(), {
   clearable: true,
   openOnFocus: false,
   openOnClick: true,
+  calendar: 'auto',
 })
 const emit = defineEmits<DateTimePickerEmits>()
 

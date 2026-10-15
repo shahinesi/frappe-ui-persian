@@ -135,6 +135,9 @@ export type DateRangePickerEmits = {
 export interface DateTimePickerProps extends CommonDatePickerProps {
   /** Controlled value for the picker. */
   modelValue?: string
+
+  /** Calendar for presentation. Defaults to Persian for `fa` locales and Gregorian otherwise. */
+  calendar?: CalendarPreference
 }
 
 export type DateTimePickerEmits = DatePickerEmits

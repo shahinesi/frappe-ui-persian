@@ -64,6 +64,30 @@ describe('DateTimePicker', () => {
     cy.get('@updateModel').should('have.been.calledWith', '2026-10-02 12:30:00')
   })
 
+  it('supports an explicit Gregorian calendar in a Persian locale', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    cy.mount(DateTimePicker, {
+      props: { calendar: 'gregorian', modelValue: '2026-10-01 12:30:00' },
+    })
+    cy.get('input').first().dblclick()
+    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'Oct 2026')
+  })
+
+  it('supports an explicit Persian calendar in an English locale', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'en-US'
+      document.documentElement.dir = 'ltr'
+    })
+    cy.mount(DateTimePicker, {
+      props: { calendar: 'persian', modelValue: '2026-10-01 12:30:00' },
+    })
+    cy.get('input').first().dblclick()
+    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'مهر ۱۴۰۵')
+  })
+
   it('Now button selects current date and time, and closes', () => {
     cy.mount(DateTimePicker, {
       props: { 'onUpdate:modelValue': cy.spy().as('onUpdate') },

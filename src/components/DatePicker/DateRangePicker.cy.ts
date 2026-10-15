@@ -145,9 +145,10 @@ describe('DateRangePicker', () => {
       document.documentElement.lang = 'fa-IR'
       document.documentElement.dir = 'rtl'
     })
-    cy.mount(DateRangePicker, { props: { calendar: 'persian', modelValue: [] } })
+    cy.mount(DateRangePicker, {
+      props: { calendar: 'persian', modelValue: [], open: true },
+    })
 
-    cy.get('input').dblclick()
     cy.get('[aria-label=cycle-calendar-view]').click()
     cy.get('[aria-label="Select month and year"]').should('be.visible')
     cy.get('[role=listbox][aria-label="Select year"]')
@@ -170,22 +171,22 @@ describe('DateRangePicker', () => {
       props: {
         calendar: 'gregorian',
         modelValue: [],
+        open: true,
         'onUpdate:modelValue': onUpdate,
       },
     })
 
-    cy.get('input').dblclick()
     cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'Oct 2026')
     cy.get('[role=grid] > div')
       .first()
       .find('div')
       .first()
-      .should('have.text', 'Sun')
+      .should('have.text', 'S')
     cy.get('[role=grid] > div')
       .first()
       .find('div')
       .last()
-      .should('have.text', 'Sat')
+      .should('have.text', 'S')
     cy.get('[data-value="2026-10-01"]').click()
     cy.get('[data-value="2026-10-02"]').click()
     cy.get('@updateModel').should('have.been.calledWith', [

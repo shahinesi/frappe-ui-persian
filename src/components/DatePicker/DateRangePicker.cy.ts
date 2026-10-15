@@ -104,6 +104,96 @@ describe('DateRangePicker', () => {
     cy.get('[role=grid]').find('div').first().should('contain.text', 'شنبه')
   })
 
+  it('renders the Persian month and Saturday-first days while emitting ISO dates', () => {
+    cy.clock(Date.UTC(2026, 9, 15, 12))
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DateRangePicker, {
+      props: {
+        calendar: 'persian',
+        modelValue: [],
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+
+    cy.get('input').dblclick()
+    cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'مهر ۱۴۰۵')
+    cy.get('[role=grid] > div')
+      .first()
+      .find('div')
+      .first()
+      .should('have.text', 'شنبه')
+    cy.get('[role=grid] > div')
+      .first()
+      .find('div')
+      .last()
+      .should('have.text', 'جمعه')
+    cy.get('[data-value="2026-10-01"]').click()
+    cy.get('[data-value="2026-10-02"]').click()
+    cy.get('@updateModel').should('have.been.calledWith', [
+      '2026-10-01',
+      '2026-10-02',
+    ])
+  })
+
+  it('opens the Persian month/year selector and changes the Jalali year', () => {
+    cy.clock(Date.UTC(2026, 9, 15, 12))
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    cy.mount(DateRangePicker, { props: { calendar: 'persian', modelValue: [] } })
+
+    cy.get('input').dblclick()
+    cy.get('[aria-label=cycle-calendar-view]').click()
+    cy.get('[aria-label="Select month and year"]').should('be.visible')
+    cy.get('[role=listbox][aria-label="Select year"]')
+      .contains('button', '۱۴۰۴')
+      .click()
+    cy.get('[role=listbox][aria-label="Select month"]')
+      .contains('button', 'مهر')
+      .click()
+    cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'مهر ۱۴۰۴')
+  })
+
+  it('keeps English Gregorian labels and ISO values in English mode', () => {
+    cy.clock(Date.UTC(2026, 9, 15, 12))
+    cy.document().then((document) => {
+      document.documentElement.lang = 'en'
+      document.documentElement.dir = 'ltr'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DateRangePicker, {
+      props: {
+        calendar: 'gregorian',
+        modelValue: [],
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+
+    cy.get('input').dblclick()
+    cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'Oct 2026')
+    cy.get('[role=grid] > div')
+      .first()
+      .find('div')
+      .first()
+      .should('have.text', 'Sun')
+    cy.get('[role=grid] > div')
+      .first()
+      .find('div')
+      .last()
+      .should('have.text', 'Sat')
+    cy.get('[data-value="2026-10-01"]').click()
+    cy.get('[data-value="2026-10-02"]').click()
+    cy.get('@updateModel').should('have.been.calledWith', [
+      '2026-10-01',
+      '2026-10-02',
+    ])
+  })
+
   it('supports a localized today label and placeholder', () => {
     cy.mount(DateRangePicker, {
       props: { todayLabel: 'امروز', placeholder: 'انتخاب بازه' },

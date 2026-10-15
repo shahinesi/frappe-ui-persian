@@ -30,7 +30,7 @@
         size="sm"
         class="text-sm-medium text-ink-gray-7"
         label="cycle-calendar-view"
-        @click="emit('cycleView')"
+        @click="emit('cycle-view')"
       >
         {{ heading }}
       </Button>
@@ -251,7 +251,7 @@ const emit = defineEmits<{
   (e: 'prev'): void
   (e: 'next'): void
   (e: 'today'): void
-  (e: 'cycleView'): void
+  (e: 'cycle-view'): void
   (e: 'selectMonth', i: number): void
   (e: 'selectYear', y: number): void
   (e: 'selectDate', d: Dayjs): void

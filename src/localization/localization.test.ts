@@ -45,10 +45,12 @@ describe('useDocumentLocale', () => {
 
 describe('resolveCalendar', () => {
   it('defaults Persian locales to the Persian calendar and others to Gregorian', () => {
+    expect(resolveCalendar('auto', 'fa')).toBe('persian')
     expect(resolveCalendar(undefined, 'fa-IR')).toBe('persian')
     expect(resolveCalendar('auto', 'fa-AF')).toBe('persian')
     expect(resolveCalendar('auto', 'en-US')).toBe('gregorian')
     expect(resolveCalendar('auto', 'fr-FR')).toBe('gregorian')
+    expect(resolveCalendar('auto', 'fr-FA')).toBe('gregorian')
   })
 
   it('allows an explicit calendar to override the locale', () => {

@@ -95,6 +95,54 @@ describe('DatePicker', () => {
     cy.get('[title="جمعه"]').should('have.text', 'ج')
   })
 
+  it(
+    'uses Jalali presentation for base Persian locale with distinct weekday columns',
+    () => {
+      cy.clock(Date.UTC(2026, 9, 15, 12))
+      cy.document().then((document) => {
+        document.documentElement.lang = 'fa'
+        document.documentElement.dir = 'rtl'
+      })
+      const onUpdate = cy.stub().as('updateModel')
+      cy.mount(DatePicker, {
+        props: {
+          modelValue: '2026-10-01',
+          'onUpdate:modelValue': onUpdate,
+        },
+      })
+
+      cy.get('input').dblclick()
+      cy.get('[aria-label="cycle-calendar-view"]').should(
+        'have.text',
+        'مهر ۱۴۰۵',
+      )
+      cy.get('[role="grid"] [role="row"]')
+        .first()
+        .find('[role="columnheader"]')
+        .should('have.length', 7)
+        .then(($headers) => {
+          expect(
+            [...$headers].map((header) => header.textContent?.trim()),
+          ).to.deep.equal(['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'])
+          expect(
+            [...$headers].map((header) => header.getAttribute('aria-label')),
+          ).to.deep.equal([
+            'شنبه',
+            'یکشنبه',
+            'دوشنبه',
+            'سه‌شنبه',
+            'چهارشنبه',
+            'پنجشنبه',
+            'جمعه',
+          ])
+        })
+      cy.get('[data-value="2026-10-02"]')
+        .should('have.text', '۱۰')
+        .click()
+      cy.get('@updateModel').should('have.been.calledWith', '2026-10-02')
+    },
+  )
+
   it('keeps an explicit Gregorian calendar in Persian locale', () => {
     cy.document().then((document) => {
       document.documentElement.lang = 'fa-IR'

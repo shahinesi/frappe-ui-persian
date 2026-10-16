@@ -106,6 +106,7 @@ import {
 } from 'reka-ui'
 import { TextInput } from '../TextInput'
 import { usePortalTarget } from '../../composables/usePortalTarget'
+import { useDocumentLocale } from '../../localization/localization'
 import '../shared/selection/popoverMotion.css'
 import {
   findNearestIndex,
@@ -172,6 +173,7 @@ const resolvedOffset = computed(() => props.offset ?? 4)
 const shouldKeepOpen = computed(() => props.keepOpen === true)
 
 const resolvedFormat = computed(() => props.format ?? 'HH:mm')
+const { locale } = useDocumentLocale()
 
 const isReadonly = computed(() => props.typeable === false)
 
@@ -207,7 +209,7 @@ const canonicalValue = ref<string>(
 // What the user sees / can edit in the trigger input. Synced from
 // canonicalValue when not actively typing.
 const displayValue = ref<string>(
-  formatTime(canonicalValue.value, resolvedFormat.value),
+  formatTime(canonicalValue.value, resolvedFormat.value, locale.value),
 )
 
 const isTyping = ref(false)
@@ -234,13 +236,14 @@ const displayedOptions = computed<TimeOption[]>(() => {
       const value = normalize24(o.value) || o.value
       return {
         value,
-        label: o.label || formatTime(value, resolvedFormat.value),
+        label: o.label || formatTime(value, resolvedFormat.value, locale.value),
       }
     })
   }
   return generateTimeOptions({
     interval: props.interval,
     format: resolvedFormat.value,
+    locale: locale.value,
     minMinutes: minMinutes.value,
     maxMinutes: maxMinutes.value,
   })
@@ -297,7 +300,7 @@ watch(
     if (nv === canonicalValue.value) return
     canonicalValue.value = nv
     if (!isTyping.value)
-      displayValue.value = formatTime(nv, resolvedFormat.value)
+      displayValue.value = formatTime(nv, resolvedFormat.value, locale.value)
   },
 )
 
@@ -309,10 +312,21 @@ watch(
       displayValue.value = formatTime(
         canonicalValue.value,
         resolvedFormat.value,
+        locale.value,
       )
     }
   },
 )
+
+watch(locale, (activeLocale) => {
+  if (!isTyping.value) {
+    displayValue.value = formatTime(
+      canonicalValue.value,
+      resolvedFormat.value,
+      activeLocale,
+    )
+  }
+})
 
 // User typing in the input — mark typing mode so option highlight + class
 // logic switches to the "nearest match" affordance.
@@ -321,7 +335,11 @@ watch(displayValue, () => {
   // The model→display sync above (re)writes displayValue while not typing —
   // distinguish user keystrokes from that programmatic write by only
   // toggling when the value diverges from the formatted canonical.
-  const formatted = formatTime(canonicalValue.value, resolvedFormat.value)
+  const formatted = formatTime(
+    canonicalValue.value,
+    resolvedFormat.value,
+    locale.value,
+  )
   if (displayValue.value !== formatted) {
     isTyping.value = true
     highlightIndex.value = -1
@@ -331,7 +349,7 @@ watch(displayValue, () => {
 function commit(value: string) {
   const prev = canonicalValue.value
   canonicalValue.value = value
-  displayValue.value = formatTime(value, resolvedFormat.value)
+  displayValue.value = formatTime(value, resolvedFormat.value, locale.value)
   isTyping.value = false
   emit('update:modelValue', value)
   if (value !== prev) emit('change', value)
@@ -345,6 +363,7 @@ function commitTyped(raw: string) {
   const formattedCurrent = formatTime(
     canonicalValue.value,
     resolvedFormat.value,
+    locale.value,
   )
   if (raw === formattedCurrent) {
     displayValue.value = formattedCurrent
@@ -359,7 +378,11 @@ function commitTyped(raw: string) {
     // Rejected text reverts to the last valid value, which is the whole
     // report: `input-invalid` and `invalid-change` said the same thing to
     // nobody, and the flag never reset (INP-Q3).
-    displayValue.value = formatTime(canonicalValue.value, resolvedFormat.value)
+    displayValue.value = formatTime(
+      canonicalValue.value,
+      resolvedFormat.value,
+      locale.value,
+    )
     isTyping.value = false
     return
   }

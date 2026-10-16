@@ -74,6 +74,39 @@ describe('useLocalizedText', () => {
     translator.value = () => undefined
     expect(text.value).toBe('No options')
   })
+
+  it('tracks a reactive catalog through a host translator during locale switches', async () => {
+    document.documentElement.lang = 'fa-IR'
+    const catalogs = ref({
+      fa: { 'No results': 'نتیجه‌ای پیدا نشد' },
+      en: { 'No results': 'No results' },
+    })
+    const translator = (message: string) => {
+      const language = document.documentElement.lang.startsWith('fa')
+        ? 'fa'
+        : 'en'
+      return catalogs.value[language][message as 'No results']
+    }
+    const text = useLocalizedText('No results', translator)
+
+    expect(text.value).toBe('نتیجه‌ای پیدا نشد')
+
+    catalogs.value = {
+      ...catalogs.value,
+      en: { 'No results': 'No results found' },
+    }
+    document.documentElement.lang = 'en-US'
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(text.value).toBe('No results found')
+
+    catalogs.value = {
+      ...catalogs.value,
+      fa: { 'No results': 'موردی پیدا نشد' },
+    }
+    document.documentElement.lang = 'fa-IR'
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(text.value).toBe('موردی پیدا نشد')
+  })
 })
 
 describe('resolveCalendar', () => {

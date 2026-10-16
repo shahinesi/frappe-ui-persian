@@ -2,6 +2,7 @@ import type { Component, VNodeChild } from 'vue'
 import type { InputSize, InputVariant } from '../../composables/inputTypes'
 import type { InputLabelingProps } from '../../composables/useInputLabeling'
 import type { PortalTarget } from '../../composables/usePortalTarget'
+import type { LocaleTranslator } from '../../localization'
 
 /**
  * Combobox renders the same trigger geometry and surfaces as every other text
@@ -104,8 +105,11 @@ export interface ComboboxProps extends InputLabelingProps {
   /** Size of the trigger and option rows. */
   size?: ComboboxSize
 
-  /** Placeholder text shown when no value is selected. */
+  /** Placeholder text shown when no value is selected. Defaults to localized `Select option`. */
   placeholder?: string
+
+  /** Optional host translator used for built-in combobox labels. */
+  translator?: LocaleTranslator
 
   /** Disables the combobox. */
   disabled?: boolean
@@ -146,7 +150,7 @@ export interface ComboboxProps extends InputLabelingProps {
   /** Replaces the results with a loading state. */
   loading?: boolean
 
-  /** Fallback empty-state copy. */
+  /** Fallback empty-state copy. Defaults to localized `No results`. */
   emptyText?: string
 
   /**

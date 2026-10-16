@@ -1,9 +1,18 @@
-import { computed, type ComputedRef } from 'vue'
+import {
+  computed,
+  toValue,
+  type ComputedRef,
+  type MaybeRef,
+  type MaybeRefOrGetter,
+  unref,
+} from 'vue'
 import {
   documentAttributes,
   documentDir,
   documentLocale,
 } from '#utils/documentAttributes'
+export { resolveCalendar } from './calendar'
+export type { CalendarPreference, ResolvedCalendar } from './calendar'
 
 /** Reactive language and direction declared on `document.documentElement`. */
 export interface DocumentLocale {
@@ -11,6 +20,18 @@ export interface DocumentLocale {
   locale: ComputedRef<string>
   /** The declared `dir` attribute, normalized to `ltr` or `rtl`. */
   direction: ComputedRef<'ltr' | 'rtl'>
+}
+
+/** A host application's translator, such as Frappe's `__` function. */
+export type LocaleTranslator = (
+  message: string,
+) => string | null | undefined
+
+/** Intl date options with an optional literal separator for separate endpoints. */
+export interface LocaleDateRangeFormatOptions
+  extends Intl.DateTimeFormatOptions {
+  /** When set, format both endpoints separately using this separator. */
+  rangeSeparator?: string
 }
 
 /**
@@ -33,6 +54,29 @@ export function useDocumentLocale(): DocumentLocale {
 }
 
 /**
+ * Resolve a UI message through an optional host translator and refresh it when
+ * the document language changes. Missing translations fall back to the source.
+ */
+export function useLocalizedText(
+  message: MaybeRefOrGetter<string>,
+  translator?: MaybeRef<LocaleTranslator | undefined>,
+): ComputedRef<string> {
+  const locale = useDocumentLocale().locale
+
+  return computed(() => {
+    locale.value
+    const source = toValue(message)
+    const translate = unref(translator)
+    if (!translate) return source
+
+    const localized = translate(source)
+    return typeof localized === 'string' && localized.length > 0
+      ? localized
+      : source
+  })
+}
+
+/**
  * Format a display value using the language declared on the document.
  * `null`, `undefined`, and `NaN` mean no value and return an empty string;
  * zero remains a real value. Data passed to this helper is never mutated.
@@ -43,6 +87,21 @@ export function formatLocaleNumber(
 ): string {
   if (value === null || value === undefined || Number.isNaN(value)) return ''
   return new Intl.NumberFormat(documentLocale(), options).format(value)
+}
+
+/**
+ * Format a percentage value expressed in percentage points (for example, 12.5
+ * means 12.5%). The document locale controls digits and the percent symbol.
+ */
+export function formatLocalePercent(
+  value: number | null | undefined,
+  options: Intl.NumberFormatOptions = {},
+): string {
+  if (value === null || value === undefined || Number.isNaN(value)) return ''
+  return new Intl.NumberFormat(documentLocale(), {
+    ...options,
+    style: 'percent',
+  }).format(value / 100)
 }
 
 /**
@@ -77,6 +136,59 @@ export function formatLocaleDate(
   return new Intl.DateTimeFormat(documentLocale(), formatOptions).format(
     parsed.date,
   )
+}
+
+/**
+ * Format a date range using the document language and Intl calendar data.
+ * Date-only `YYYY-MM-DD` endpoints are interpreted as UTC calendar dates to
+ * avoid timezone day shifts. Inputs remain unchanged; invalid or absent
+ * endpoints, and reversed ranges, return an empty string.
+ */
+export function formatLocaleDateRange(
+  start: Date | string | number | null | undefined,
+  end: Date | string | number | null | undefined,
+  options: LocaleDateRangeFormatOptions = {},
+): string {
+  if (
+    start === null ||
+    start === undefined ||
+    start === '' ||
+    end === null ||
+    end === undefined ||
+    end === ''
+  ) {
+    return ''
+  }
+
+  const parsedStart = parseDisplayDate(start)
+  const parsedEnd = parseDisplayDate(end)
+  if (
+    !parsedStart ||
+    !parsedEnd ||
+    parsedStart.date.getTime() > parsedEnd.date.getTime()
+  ) {
+    return ''
+  }
+
+  const { rangeSeparator, ...dateOptions } = options
+  const hasDateOptions = Object.keys(dateOptions).length > 0
+  const formatOptions: Intl.DateTimeFormatOptions = hasDateOptions
+    ? { ...dateOptions }
+    : { dateStyle: 'medium' }
+
+  if (parsedStart.dateOnly && parsedEnd.dateOnly) {
+    formatOptions.timeZone = 'UTC'
+  } else if (!formatOptions.timeZone) {
+    formatOptions.timeZone = 'UTC'
+  }
+
+  const formatter = new Intl.DateTimeFormat(documentLocale(), formatOptions)
+  if (rangeSeparator !== undefined) {
+    return `${formatter.format(parsedStart.date)}${rangeSeparator}${formatter.format(
+      parsedEnd.date,
+    )}`
+  }
+  return formatter.formatRange(parsedStart.date, parsedEnd.date)
 }
 
 function parseDisplayDate(

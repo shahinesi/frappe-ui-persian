@@ -97,6 +97,10 @@
       "import": "./src/localization/index.ts",
       "types": "./src/localization/index.ts"
     },
+    "./localization/calendar": {
+      "import": "./src/localization/calendar.ts",
+      "types": "./src/localization/calendar.ts"
+    },
     "./localization/style.css": {
       "style": "./src/localization/style.css",
       "import": "./src/localization/style.css"

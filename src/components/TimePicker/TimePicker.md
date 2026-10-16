@@ -32,7 +32,9 @@ a shift cannot end before it starts.
 ### Value
 
 The value is a 24-hour `'HH:mm'` string, or `'HH:mm:ss'` when seconds were
-typed. `min` and `max` use the same form.
+typed. `min` and `max` use the same form. Display digits follow the document
+locale; Persian and Arabic numerals are accepted as input and emitted values
+remain canonical ASCII time strings.
 
 ### Display format
 

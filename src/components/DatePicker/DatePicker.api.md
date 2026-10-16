@@ -51,6 +51,13 @@
     default: '"Select date"'
   },
   {
+    name: 'todayLabel',
+    description: 'Label for the action that selects today. Empty hides the action. Default: `Today`.',
+    required: false,
+    type: 'string',
+    default: '"Today"'
+  },
+  {
     name: 'open',
     description: 'Controls popover open state (for controlled usage).',
     required: false,
@@ -114,6 +121,13 @@
     description: 'Return true to prevent a date from being selected. Combined with `min`/`max`.',
     required: false,
     type: '((date: Dayjs) => boolean)'
+  },
+  {
+    name: 'calendar',
+    description: 'Calendar system for presentation. Labels and digits follow the document locale. Defaults to Persian for `fa` locales and Gregorian otherwise.',
+    required: false,
+    type: 'CalendarPreference',
+    default: '"auto"'
   },
   {
     name: 'modelValue',
@@ -259,6 +273,13 @@
     default: '"Select range"'
   },
   {
+    name: 'todayLabel',
+    description: 'Label for the action that selects today. Empty hides the action. Default: `Today`.',
+    required: false,
+    type: 'string',
+    default: '"Today"'
+  },
+  {
     name: 'open',
     description: 'Controls popover open state (for controlled usage).',
     required: false,
@@ -322,6 +343,13 @@
     description: 'Return true to prevent a date from being selected. Combined with `min`/`max`.',
     required: false,
     type: '((date: Dayjs) => boolean)'
+  },
+  {
+    name: 'calendar',
+    description: 'Calendar system for presentation. Labels and digits follow the document locale. Defaults to Persian for `fa` locales and Gregorian otherwise.',
+    required: false,
+    type: 'CalendarPreference',
+    default: '"auto"'
   },
   {
     name: 'modelValue',
@@ -544,6 +572,13 @@
     required: false,
     type: 'string',
     default: '""'
+  },
+  {
+    name: 'calendar',
+    description: 'Calendar system for presentation. Labels and digits follow the document locale. Defaults to Persian for `fa` locales and Gregorian otherwise.',
+    required: false,
+    type: 'CalendarPreference',
+    default: '"auto"'
   },
   {
     name: 'label',

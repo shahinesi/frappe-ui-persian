@@ -1,6 +1,7 @@
 import type { Dayjs } from 'dayjs/esm'
 import type { InputSize, InputVariant } from '../../composables/inputTypes'
 import type { InputLabelingProps } from '../../composables/useInputLabeling'
+import type { CalendarPreference } from '../../localization/calendar'
 
 // Re-exported, not redeclared: `index.ts` does `export * from './types'`, so a
 // local copy publishes a second structurally identical `PopoverSide` at the
@@ -79,6 +80,12 @@ export interface CommonDatePickerProps extends InputLabelingProps {
 export interface DatePickerProps extends CommonDatePickerProps {
   /** Controlled value for the picker. */
   modelValue?: string
+
+  /** Calendar system for presentation. Labels and digits follow the document locale. Defaults to Persian for `fa` locales and Gregorian otherwise. */
+  calendar?: CalendarPreference
+
+  /** Label for the action that selects today. Empty hides the action. Default: `Today`. */
+  todayLabel?: string
 }
 
 /** A range value: a `[from, to]` tuple in `YYYY-MM-DD` format, or `[]` when cleared. */
@@ -92,6 +99,12 @@ export interface DateRangePickerProps extends CommonDatePickerProps {
    * through the model fail to type-check.
    */
   modelValue?: DateRangeValue
+
+  /** Calendar system for presentation. Labels and digits follow the document locale. Defaults to Persian for `fa` locales and Gregorian otherwise. */
+  calendar?: CalendarPreference
+
+  /** Label for the action that selects today. Empty hides the action. Default: `Today`. */
+  todayLabel?: string
 
   /** Render two calendar panels side by side (current month + next month). */
   dualPane?: boolean
@@ -122,6 +135,9 @@ export type DateRangePickerEmits = {
 export interface DateTimePickerProps extends CommonDatePickerProps {
   /** Controlled value for the picker. */
   modelValue?: string
+
+  /** Calendar system for presentation. Labels and digits follow the document locale. Defaults to Persian for `fa` locales and Gregorian otherwise. */
+  calendar?: CalendarPreference
 }
 
 export type DateTimePickerEmits = DatePickerEmits

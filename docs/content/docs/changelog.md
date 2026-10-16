@@ -36,7 +36,7 @@ Entries are grouped by area. Inside each area, they keep the order they had in t
 
 ## Unreleased
 
-- **Localization (additive):** `frappe-ui/localization` exposes reactive document language/direction and display-only locale number/date formatters. `frappe-ui/localization/style.css` adds an opt-in Vazirmatn font-family utility; the app supplies the font asset.
+- **Localization (additive):** `frappe-ui/localization` exposes reactive document language/direction and display-only locale number/date formatters. `frappe-ui/localization/style.css` bundles the SIL OFL 1.1 Vazirmatn font and exposes it through the opt-in `.fui-vazirmatn` utility.
 
 ## 1.0.0 {#v1-0-0}
 

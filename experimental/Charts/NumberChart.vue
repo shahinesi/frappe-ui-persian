@@ -4,7 +4,7 @@
     :class="config.delta ? 'pb-6' : 'pb-3'"
   >
     <slot name="body">
-      <div class="flex w-full flex-col">
+      <div class="number-chart-content flex w-full flex-col">
         <slot name="title">
           <span class="truncate text-sm-medium text-ink-gray-5">
             {{ config.title }}
@@ -56,3 +56,16 @@ import { NumberChartConfig } from './types'
 
 defineProps<{ config: NumberChartConfig }>()
 </script>
+
+<style>
+[dir='rtl'] .number-chart-content > :first-child {
+  align-self: flex-start;
+  text-align: start;
+}
+
+[dir='rtl'] .number-chart-content > :nth-child(2),
+[dir='rtl'] .number-chart-content > :nth-child(3) {
+  align-self: flex-end;
+  text-align: end;
+}
+</style>

@@ -1,4 +1,13 @@
-/* Optional utility: the consuming app must load/register the Vazirmatn font. */
+/* Vazirmatn is bundled under the SIL Open Font License 1.1. */
+@font-face {
+  font-family: Vazirmatn;
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/Vazirmatn/Vazirmatn-wght.woff2') format('woff2');
+}
+
+/* Opt in per subtree; importing this stylesheet does not change app typography. */
 .fui-vazirmatn {
   font-family:
     Vazirmatn, var(--font-sans, ui-sans-serif, system-ui, sans-serif);

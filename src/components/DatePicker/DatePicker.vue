@@ -65,7 +65,8 @@
         <DateCalendar
           ref="calendarRef"
           :model-value="selected"
-          today-label="Today"
+          :calendar="props.calendar"
+          :today-label="props.todayLabel"
           :min="props.min"
           :max="props.max"
           :is-date-unavailable="props.isDateUnavailable"
@@ -90,6 +91,9 @@ import {
   makeUnavailableCheck,
 } from './composables'
 import type { Dayjs } from 'dayjs/esm'
+import { formatPersianDate, parsePersianDate } from '../../localization/persianCalendar'
+import { resolveCalendar } from '../../localization/calendar'
+import { useDocumentLocale } from '../../localization/localization'
 import type { DatePickerProps, DatePickerEmits, DatePickerSlots } from './types'
 import type { DateCalendarExposed } from './calendarTypes'
 import type {
@@ -101,11 +105,13 @@ const props = withDefaults(defineProps<DatePickerProps>(), {
   modelValue: '',
   variant: 'subtle',
   placeholder: 'Select date',
+  todayLabel: 'Today',
   typeable: true,
   disabled: false,
   clearable: true,
   openOnFocus: false,
   openOnClick: true,
+  calendar: 'auto',
 })
 const emit = defineEmits<DatePickerEmits>()
 
@@ -171,6 +177,10 @@ const inputReadonly = useTypeable(props)
 // ── Calendar state ───────────────────────────────────────────────────────────
 
 const DATE_FORMAT = 'YYYY-MM-DD'
+const { locale } = useDocumentLocale()
+const isPersianCalendar = computed(
+  () => resolveCalendar(props.calendar, locale.value) === 'persian',
+)
 const selected = ref<string>('')
 const initialValue = ref(props.modelValue || '')
 
@@ -215,7 +225,11 @@ watch(
 // ── Display ──────────────────────────────────────────────────────────────────
 
 const displayLabel = computed<string>(() =>
-  props.format ? formatter(selected.value, props.format) : selected.value,
+  isPersianCalendar.value
+    ? formatPersianDate(selected.value, locale.value, props.format ?? 'YYYY/MM/DD')
+    : props.format
+      ? formatter(selected.value, props.format)
+      : selected.value,
 )
 
 function formatter(dateStr: string, format: string): string {
@@ -254,7 +268,11 @@ function commitInput(close = false): void {
     }
     return
   }
-  const d = coerceToDayjs(raw)
+  const persianISO =
+    isPersianCalendar.value
+      ? parsePersianDate(raw, props.format ?? 'YYYY/MM/DD', locale.value)
+      : null
+  const d = persianISO ? dayjs(persianISO) : coerceToDayjs(raw)
   if (d && !checkUnavailable(d)) {
     selectDate(d)
     if (close && !shouldKeepOpen.value) isOpen.value = false

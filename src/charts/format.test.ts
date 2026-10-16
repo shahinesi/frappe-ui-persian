@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { chartFont, measureTextWidth } from './measureText'
 import {
   estimateTextWidth,
@@ -159,6 +159,23 @@ describe('formatPercent', () => {
     expect(formatPercent(12.4)).toBe('12%')
     expect(formatPercent(12.6)).toBe('13%')
     expect(formatPercent(100)).toBe('100%')
+  })
+
+  it('localizes chart percentages without changing English output', () => {
+    vi.stubGlobal('MutationObserver', undefined)
+    try {
+      vi.stubGlobal('document', { documentElement: { lang: 'fa-IR' } })
+      expect(formatPercent(0)).toBe('۰٪')
+      expect(formatPercent(0.4)).toBe('<۱٪')
+      expect(formatPercent(12.6)).toBe('۱۳٪')
+
+      vi.stubGlobal('document', { documentElement: { lang: 'en-US' } })
+      expect(formatPercent(0)).toBe('0%')
+      expect(formatPercent(0.4)).toBe('<1%')
+      expect(formatPercent(12.6)).toBe('13%')
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 })
 

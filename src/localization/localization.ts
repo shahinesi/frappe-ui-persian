@@ -55,6 +55,21 @@ export function formatLocaleNumber(
 }
 
 /**
+ * Format a percentage value expressed in percentage points (for example, 12.5
+ * means 12.5%). The document locale controls digits and the percent symbol.
+ */
+export function formatLocalePercent(
+  value: number | null | undefined,
+  options: Intl.NumberFormatOptions = {},
+): string {
+  if (value === null || value === undefined || Number.isNaN(value)) return ''
+  return new Intl.NumberFormat(documentLocale(), {
+    ...options,
+    style: 'percent',
+  }).format(value / 100)
+}
+
+/**
  * Format a date for display using the document language and Intl calendar data.
  * A date-only ISO value is interpreted as a calendar date in UTC, so it cannot
  * shift to the previous day when the browser is behind UTC. When no options are

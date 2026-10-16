@@ -1,5 +1,8 @@
 import { dayjs } from '#utils/dayjs'
-import { formatLocaleNumber } from '../localization/localization'
+import {
+  formatLocaleNumber,
+  formatLocalePercent,
+} from '../localization/localization'
 import { chartFont, measureTextWidth } from './measureText'
 
 export type TimeGrain =
@@ -132,9 +135,9 @@ export function formatValue(
 
 /** `0.4` -> `<1%`: a rounded `0%` on a slice that is visibly there reads as a bug. */
 export function formatPercent(percent: number) {
-  if (!percent) return '0%'
-  if (percent < 1) return '<1%'
-  return `${Math.round(percent)}%`
+  if (!percent) return formatLocalePercent(0)
+  if (percent < 1) return `<${formatLocalePercent(1)}`
+  return formatLocalePercent(Math.round(percent))
 }
 
 /** Keeps whole numbers whole instead of forcing a `.00` on every tick. */

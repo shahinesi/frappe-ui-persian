@@ -6,6 +6,7 @@ import {
   formatLocaleDate,
   formatLocaleDateRange,
   formatLocaleNumber,
+  formatLocalePercent,
   resolveCalendar,
   useDocumentLocale,
 } from './localization'
@@ -70,6 +71,30 @@ describe('formatLocaleNumber', () => {
     expect(formatLocaleNumber(undefined)).toBe('')
     expect(formatLocaleNumber(Number.NaN)).toBe('')
     expect(formatLocaleNumber(0)).not.toBe('')
+  })
+})
+
+describe('formatLocalePercent', () => {
+  it('formats percentage points with Persian digits and percent symbol', () => {
+    document.documentElement.lang = 'fa-IR'
+    expect(formatLocalePercent(12.5, { maximumFractionDigits: 1 })).toBe(
+      '۱۲٫۵٪',
+    )
+    expect(formatLocalePercent(0)).toBe('۰٪')
+  })
+
+  it('preserves the English percentage convention', () => {
+    document.documentElement.lang = 'en-US'
+    expect(formatLocalePercent(12.5, { maximumFractionDigits: 1 })).toBe(
+      '12.5%',
+    )
+  })
+
+  it('keeps missing values distinct from zero', () => {
+    expect(formatLocalePercent(null)).toBe('')
+    expect(formatLocalePercent(undefined)).toBe('')
+    expect(formatLocalePercent(Number.NaN)).toBe('')
+    expect(formatLocalePercent(0)).not.toBe('')
   })
 })
 

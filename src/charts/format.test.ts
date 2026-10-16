@@ -1,3 +1,6 @@
+/**
+ * @vitest-environment jsdom
+ */
 import { describe, expect, it } from 'vitest'
 import { chartFont, measureTextWidth } from './measureText'
 import {
@@ -159,6 +162,18 @@ describe('formatPercent', () => {
     expect(formatPercent(12.4)).toBe('12%')
     expect(formatPercent(12.6)).toBe('13%')
     expect(formatPercent(100)).toBe('100%')
+  })
+
+  it('localizes chart percentages without changing English output', () => {
+    document.documentElement.lang = 'fa-IR'
+    expect(formatPercent(0)).toBe('۰٪')
+    expect(formatPercent(0.4)).toBe('<۱٪')
+    expect(formatPercent(12.6)).toBe('۱۳٪')
+
+    document.documentElement.lang = 'en-US'
+    expect(formatPercent(0)).toBe('0%')
+    expect(formatPercent(0.4)).toBe('<1%')
+    expect(formatPercent(12.6)).toBe('13%')
   })
 })
 

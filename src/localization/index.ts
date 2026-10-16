@@ -2,6 +2,7 @@ export {
   formatLocaleDate,
   formatLocaleDateRange,
   formatLocaleNumber,
+  formatLocalePercent,
   useDocumentLocale,
   type DocumentLocale,
   type LocaleDateRangeFormatOptions,

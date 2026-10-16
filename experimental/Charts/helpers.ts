@@ -80,6 +80,7 @@ export function formatDate(date: string, format?: string, grain: TimeGrain = 'da
       const quarter = Math.floor((persianDate.month - 1) / 3) + 1
       return `سه‌ماههٔ ${formatLocaleNumber(quarter)} ${formatLocaleNumber(
         persianDate.year,
+        { useGrouping: false },
       )}`
     }
 

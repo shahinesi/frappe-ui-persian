@@ -122,6 +122,8 @@ function handleSelect(item: NormalizedItem, event: Event) {
       <div
         v-if="showEmpty"
         data-slot="empty"
+        aria-live="polite"
+        aria-atomic="true"
         class="px-2 py-1.5 text-base text-ink-gray-5"
       >
         <component

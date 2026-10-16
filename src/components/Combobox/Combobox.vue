@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, useAttrs, useTemplateRef, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  ref,
+  toRef,
+  useAttrs,
+  useTemplateRef,
+  watch,
+} from 'vue'
 import {
   ComboboxAnchor,
   ComboboxContent,
@@ -16,6 +24,7 @@ import { useInputLabeling } from '../../composables/useInputLabeling'
 import { useReactiveSlots } from '../../composables/useReactiveSlots'
 import { usePortalTarget } from '../../composables/usePortalTarget'
 import { useEmptyValueMapping } from '../shared/selection/useEmptyValueMapping'
+import { useLocalizedText } from '../../localization'
 import { useFilteredGroups } from '../shared/selection/useFilteredGroups'
 import { useIsModelBound } from '../shared/selection/useIsModelBound'
 import {
@@ -64,7 +73,6 @@ const props = withDefaults(defineProps<ComboboxProps>(), {
   trigger: 'input',
   variant: 'subtle',
   size: 'sm',
-  placeholder: 'Select option',
   disabled: false,
   openOnFocus: false,
   openOnClick: true,
@@ -72,12 +80,26 @@ const props = withDefaults(defineProps<ComboboxProps>(), {
   align: 'start',
   offset: 4,
   loading: false,
-  emptyText: 'No results',
   hideSearch: false,
   filterable: true,
 })
 
 const portalTarget = usePortalTarget(() => props.portalTo)
+
+const defaultPlaceholder = useLocalizedText(
+  'Select option',
+  toRef(props, 'translator'),
+)
+const defaultEmptyText = useLocalizedText(
+  'No results',
+  toRef(props, 'translator'),
+)
+const displayPlaceholder = computed(
+  () => props.placeholder ?? defaultPlaceholder.value,
+)
+const displayEmptyText = computed(
+  () => props.emptyText ?? defaultEmptyText.value,
+)
 
 const emit = defineEmits<ComboboxEmits>()
 const attrs = useAttrs()
@@ -614,7 +636,7 @@ defineSlots<ComboboxSlots>()
                   !selectedOption && 'text-ink-gray-4',
                 ]"
               >
-                {{ selectedOption?.label ?? placeholder }}
+                {{ selectedOption?.label ?? displayPlaceholder }}
               </span>
 
               <slot name="suffix" v-bind="controlSlotProps">
@@ -672,7 +694,7 @@ defineSlots<ComboboxSlots>()
               :data-size="size"
               :value="query"
               :disabled="disabled"
-              :placeholder="placeholder"
+              :placeholder="displayPlaceholder"
               :class="resolvedInputClasses"
               @input="handleInputChange"
               @focus="emit('focus', $event)"
@@ -756,7 +778,7 @@ defineSlots<ComboboxSlots>()
                     data-slot="input"
                     :value="query"
                     :disabled="disabled"
-                    :placeholder="placeholder"
+                    :placeholder="displayPlaceholder"
                     class="min-w-0 flex-1 px-0 border-0 bg-transparent py-2 text-base text-ink-gray-8 outline-none placeholder:text-ink-gray-4 focus:ring-0"
                     @input="handleInputChange"
                     @focus="emit('focus', $event)"
@@ -775,7 +797,7 @@ defineSlots<ComboboxSlots>()
                   :query="typedQuery"
                   :model="currentValue"
                   :loading="loading"
-                  :empty-text="emptyText"
+                  :empty-text="displayEmptyText"
                   :show-empty="showEmpty"
                   :slot-fns="slotFns"
                   :all-selectable-options="allSelectableOptions"

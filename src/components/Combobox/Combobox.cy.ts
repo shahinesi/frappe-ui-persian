@@ -1,4 +1,4 @@
-import { defineComponent, h, ref } from 'vue'
+import { defineComponent, h, onUnmounted, ref } from 'vue'
 import Combobox from './Combobox.vue'
 import Dialog from '../Dialog/Dialog.vue'
 
@@ -6,6 +6,77 @@ const fruits = ['Apple', 'Mango', 'Cherry']
 
 describe('Combobox', () => {
   describe('rendering', () => {
+    it('reactively translates built-in labels and announces the empty state', () => {
+      const LocalizedCombobox = defineComponent({
+        setup() {
+          const language = ref('fa-IR')
+          const catalog = ref({
+            fa: {
+              'Select option': 'انتخاب گزینه',
+              'No results': 'نتیجه‌ای پیدا نشد',
+            },
+            en: {
+              'Select option': 'Select option',
+              'No results': 'No results',
+            },
+          })
+          document.documentElement.lang = language.value
+          document.documentElement.dir = 'rtl'
+
+          onUnmounted(() => {
+            document.documentElement.lang = ''
+            document.documentElement.dir = ''
+          })
+
+          const translator = (message: string) =>
+            catalog.value[language.value.startsWith('fa') ? 'fa' : 'en'][
+              message as 'Select option' | 'No results'
+            ]
+
+          return () =>
+            h('div', [
+              h(
+                'button',
+                {
+                  type: 'button',
+                  'data-cy': 'switch-language',
+                  onClick: () => {
+                    language.value = 'en-US'
+                    document.documentElement.lang = language.value
+                    document.documentElement.dir = 'ltr'
+                  },
+                },
+                'English',
+              ),
+              h(Combobox, {
+                options: [],
+                open: true,
+                translator,
+              }),
+            ])
+        },
+      })
+
+      cy.mount(LocalizedCombobox)
+      cy.get('[role="combobox"]').should(
+        'have.attr',
+        'placeholder',
+        'انتخاب گزینه',
+      )
+      cy.get('[data-slot="empty"]')
+        .should('have.attr', 'aria-live', 'polite')
+        .and('have.attr', 'aria-atomic', 'true')
+        .and('contain.text', 'نتیجه‌ای پیدا نشد')
+
+      cy.get('[data-cy="switch-language"]').click()
+      cy.get('[role="combobox"]').should(
+        'have.attr',
+        'placeholder',
+        'Select option',
+      )
+      cy.get('[data-slot="empty"]').should('contain.text', 'No results')
+    })
+
     it('renders the input shell and placeholder', () => {
       cy.mount(Combobox, {
         props: { options: fruits, placeholder: 'Pick fruit' },

@@ -63,6 +63,8 @@ See the [Calendar page](/docs/experimental/calendar) for examples and the API.
 The first chart family: `AxisChart`, `DonutChart`, `FunnelChart`,
 `NumberChart`, the `ECharts` wrapper, and `useAxisChartOptions`. Parked, and
 will be removed. Use [`frappe-ui/charts`](/docs/charts/overview) instead.
+For applications that still render this legacy `NumberChart`, its title and
+values align to the reading direction in RTL documents.
 
 ```ts
 import { AxisChart } from 'frappe-ui/experimental'

@@ -3,6 +3,15 @@ import {
   formatLocaleNumber,
   formatLocalePercent,
 } from '../localization/localization'
+import {
+  getPersianDateFromISO,
+  getPersianMonthName,
+} from '../localization/persianCalendar'
+import {
+  resolveCalendar,
+  type CalendarPreference,
+} from '../localization/calendar'
+import { readDocumentLocale } from '../utils/readDocumentLocale'
 import { chartFont, measureTextWidth } from './measureText'
 
 export type TimeGrain =
@@ -270,16 +279,16 @@ function tickUnit(date: ReturnType<typeof dayjs>): TickUnit {
 }
 
 /**
- * One tick of a time axis, named by the coarsest unit it lands on — "Jan 2023,
- * Apr 2023, Jul 2023" repeats the year as noise, so the months read "Apr" and
- * the tick opening the year reads "2023". echarts marks that tick with a `level`
- * above zero, which the `primary` rich style sets apart. Ticks finer than the
- * grain go unlabelled: a monthly series says nothing about the 15th.
+ * Format one time-axis tick, naming it by its coarsest unit. Persian locales
+ * use Jalali labels; other locales keep Gregorian labels. ECharts marks the
+ * year-opening tick with `level`, and ticks finer than the grain are omitted.
+ * An explicit calendar or consumer axis formatter can override the default.
  */
 export function formatTimeAxisLabel(
   value: any,
   grain: TimeGrain = 'day',
   level = 0,
+  calendar: CalendarPreference = 'auto',
 ) {
   const date = dayjs(value)
   if (!date.isValid()) return ''
@@ -288,6 +297,39 @@ export function formatTimeAxisLabel(
   const finest = GRAIN_TICK_UNIT[grain] ?? 'day'
   if (TICK_UNITS.indexOf(unit) > TICK_UNITS.indexOf(finest)) return ''
 
-  const label = date.format(TICK_UNIT_FORMATS[unit])
+  const locale = readDocumentLocale()
+  const label =
+    resolveCalendar(calendar, locale) === 'persian'
+      ? formatPersianTimeAxisTick(date, unit, locale)
+      : date.format(TICK_UNIT_FORMATS[unit])
   return level > 0 ? `{primary|${label}}` : label
+}
+
+function formatPersianTimeAxisTick(
+  date: ReturnType<typeof dayjs>,
+  unit: TickUnit,
+  locale: string,
+): string {
+  const parts = getPersianDateFromISO(date.format('YYYY-MM-DD'))
+  if (unit === 'year') {
+    return formatLocalizedInteger(parts.year, locale)
+  }
+  if (unit === 'month') {
+    return getPersianMonthName(parts.year, parts.month, locale, 'short')
+  }
+  if (unit === 'day') {
+    return formatLocalizedInteger(parts.day, locale)
+  }
+
+  const timeOptions: Intl.DateTimeFormatOptions = {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+    ...(unit === 'second' ? { second: '2-digit' } : {}),
+  }
+  return new Intl.DateTimeFormat(locale, timeOptions).format(date.toDate())
+}
+
+function formatLocalizedInteger(value: number, locale: string): string {
+  return new Intl.NumberFormat(locale, { useGrouping: false }).format(value)
 }

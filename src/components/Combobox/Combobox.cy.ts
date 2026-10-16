@@ -74,6 +74,7 @@ describe('Combobox', () => {
         'placeholder',
         'Select option',
       )
+      cy.get('[role="combobox"]').click()
       cy.get('[data-slot="empty"]').should('contain.text', 'No results')
     })
 

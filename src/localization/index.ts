@@ -3,8 +3,10 @@ export {
   formatLocaleDateRange,
   formatLocaleNumber,
   formatLocalePercent,
+  useLocalizedText,
   useDocumentLocale,
   type DocumentLocale,
+  type LocaleTranslator,
   type LocaleDateRangeFormatOptions,
 } from './localization'
 export {

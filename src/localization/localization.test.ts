@@ -2,6 +2,7 @@
  * @vitest-environment jsdom
  */
 import { afterEach, describe, expect, it } from 'vitest'
+import { ref } from 'vue'
 import {
   formatLocaleDate,
   formatLocaleDateRange,
@@ -9,6 +10,7 @@ import {
   formatLocalePercent,
   resolveCalendar,
   useDocumentLocale,
+  useLocalizedText,
 } from './localization'
 
 afterEach(() => {
@@ -40,6 +42,37 @@ describe('useDocumentLocale', () => {
 
     expect(stopLocale).toBe('en-US')
     expect(seen).toEqual(['de-DE', 'rtl'])
+  })
+})
+
+describe('useLocalizedText', () => {
+  it('refreshes translated text when the document language changes', async () => {
+    document.documentElement.lang = 'fa-IR'
+    const translator = (message: string) =>
+      document.documentElement.lang.startsWith('fa')
+        ? { 'No results': 'نتیجه‌ای پیدا نشد' }[message]
+        : undefined
+    const text = useLocalizedText('No results', translator)
+
+    expect(text.value).toBe('نتیجه‌ای پیدا نشد')
+
+    document.documentElement.lang = 'en-US'
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(text.value).toBe('No results')
+  })
+
+  it('supports reactive source messages and translator adapters', () => {
+    const message = ref('No results')
+    const translator = ref<(message: string) => string | undefined>(
+      (value) => `fa:${value}`,
+    )
+    const text = useLocalizedText(message, translator)
+
+    expect(text.value).toBe('fa:No results')
+
+    message.value = 'No options'
+    translator.value = () => undefined
+    expect(text.value).toBe('No options')
   })
 })
 

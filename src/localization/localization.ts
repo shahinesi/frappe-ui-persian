@@ -1,4 +1,11 @@
-import { computed, type ComputedRef } from 'vue'
+import {
+  computed,
+  toValue,
+  type ComputedRef,
+  type MaybeRef,
+  type MaybeRefOrGetter,
+  unref,
+} from 'vue'
 import {
   documentAttributes,
   documentDir,
@@ -14,6 +21,11 @@ export interface DocumentLocale {
   /** The declared `dir` attribute, normalized to `ltr` or `rtl`. */
   direction: ComputedRef<'ltr' | 'rtl'>
 }
+
+/** A host application's translator, such as Frappe's `__` function. */
+export type LocaleTranslator = (
+  message: string,
+) => string | null | undefined
 
 /** Intl date options with an optional literal separator for separate endpoints. */
 export interface LocaleDateRangeFormatOptions
@@ -39,6 +51,29 @@ export function useDocumentLocale(): DocumentLocale {
       return documentDir()
     }),
   }
+}
+
+/**
+ * Resolve a UI message through an optional host translator and refresh it when
+ * the document language changes. Missing translations fall back to the source.
+ */
+export function useLocalizedText(
+  message: MaybeRefOrGetter<string>,
+  translator?: MaybeRef<LocaleTranslator | undefined>,
+): ComputedRef<string> {
+  const locale = useDocumentLocale().locale
+
+  return computed(() => {
+    locale.value
+    const source = toValue(message)
+    const translate = unref(translator)
+    if (!translate) return source
+
+    const localized = translate(source)
+    return typeof localized === 'string' && localized.length > 0
+      ? localized
+      : source
+  })
 }
 
 /**

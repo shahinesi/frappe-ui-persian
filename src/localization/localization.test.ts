@@ -66,6 +66,19 @@ describe('useLocalizedText', () => {
     expect(resolveCalendar('auto', 'fr-FA')).toBe('gregorian')
   })
 
+  it('translates shared combobox defaults without a host translator', async () => {
+    document.documentElement.lang = 'fa-IR'
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(useLocalizedText('Select option').value).toBe('انتخاب گزینه')
+    expect(useLocalizedText('No results').value).toBe('نتیجه‌ای پیدا نشد')
+
+    document.documentElement.lang = 'en-US'
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(useLocalizedText('Select option').value).toBe('Select option')
+    expect(useLocalizedText('No results').value).toBe('No results')
+  })
+
   it('refreshes translated text when the document language changes', async () => {
     document.documentElement.lang = 'fa-IR'
     const translator = (message: string) =>

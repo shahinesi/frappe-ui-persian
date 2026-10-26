@@ -31,6 +31,8 @@ export type LocaleTranslator = (
 const builtinPersianMessages: Record<string, string> = {
   'Select date': 'انتخاب تاریخ',
   'Select date & time': 'انتخاب تاریخ و ساعت',
+  'Select option': 'انتخاب گزینه',
+  'No results': 'نتیجه‌ای پیدا نشد',
   'Select range': 'انتخاب بازه',
   'Select time': 'انتخاب ساعت',
   Today: 'امروز',

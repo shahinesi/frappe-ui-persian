@@ -1,7 +1,7 @@
 import type { EChartsCoreOption } from 'echarts/core'
 import { BLUR_OPACITY, DATA_LABEL_FONT_SIZE, toNumber } from './axisChartCommon'
 import { formatPercent } from './format'
-import { CHART_FONT_FAMILY } from './measureText'
+import { getChartFontFamily } from './measureText'
 import { paletteColors, type ChartTokens } from './tokens'
 import { mergeDeep, OTHERS_KEY, OTHERS_LABEL } from './utils'
 import type { ChartPaletteName, DonutChartConfig, DonutSlice } from './types'
@@ -159,7 +159,7 @@ export function buildDonutChartOption(
     animation: true,
     animationDuration: 500,
     animationDurationUpdate: 300,
-    textStyle: { fontFamily: CHART_FONT_FAMILY },
+    textStyle: { fontFamily: getChartFontFamily() },
     // No `tooltip` key, and no TooltipComponent registered with it: a pie has no
     // axis pointer for echarts' tooltip to drive, and the visible tooltip is a
     // Vue component (see ChartTooltip).

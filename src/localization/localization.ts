@@ -11,6 +11,7 @@ import {
   documentDir,
   documentLocale,
 } from '#utils/documentAttributes'
+import { isPersianLocale } from './calendar'
 export { resolveCalendar } from './calendar'
 export type { CalendarPreference, ResolvedCalendar } from './calendar'
 
@@ -26,6 +27,20 @@ export interface DocumentLocale {
 export type LocaleTranslator = (
   message: string,
 ) => string | null | undefined
+
+const builtinPersianMessages: Record<string, string> = {
+  'Select date': 'انتخاب تاریخ',
+  'Select date & time': 'انتخاب تاریخ و ساعت',
+  'Select range': 'انتخاب بازه',
+  'Select time': 'انتخاب ساعت',
+  Today: 'امروز',
+  Now: 'اکنون',
+  'Calendar dates': 'تاریخ‌های تقویم',
+  'Select month and year': 'انتخاب ماه و سال',
+  'Select year': 'انتخاب سال',
+  'Select month': 'انتخاب ماه',
+  Shortcuts: 'میانبرها',
+}
 
 /** Intl date options with an optional literal separator for separate endpoints. */
 export interface LocaleDateRangeFormatOptions
@@ -67,11 +82,14 @@ export function useLocalizedText(
     locale.value
     const source = toValue(message)
     const translate = unref(translator)
-    if (!translate) return source
-
-    const localized = translate(source)
-    return typeof localized === 'string' && localized.length > 0
-      ? localized
+    const localized = translate?.(source)
+    if (
+      typeof localized === 'string' &&
+      localized.length > 0 &&
+      localized !== source
+    ) return localized
+    return isPersianLocale(locale.value)
+      ? (builtinPersianMessages[source] ?? source)
       : source
   })
 }

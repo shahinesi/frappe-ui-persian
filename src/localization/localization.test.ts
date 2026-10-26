@@ -46,6 +46,26 @@ describe('useDocumentLocale', () => {
 })
 
 describe('useLocalizedText', () => {
+  it('translates shared picker defaults for Persian and preserves English', async () => {
+    const placeholder = useLocalizedText('Select date')
+    expect(placeholder.value).toBe('Select date')
+    document.documentElement.lang = 'fa-IR'
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(placeholder.value).toBe('انتخاب تاریخ')
+    expect(useLocalizedText('Now').value).toBe('اکنون')
+    document.documentElement.lang = 'en-US'
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(placeholder.value).toBe('Select date')
+  })
+
+  it('recognizes Persian language tags case-insensitively', async () => {
+    document.documentElement.lang = 'FA-IR'
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(useLocalizedText('Select date').value).toBe('انتخاب تاریخ')
+    expect(resolveCalendar('auto', 'FA-IR')).toBe('persian')
+    expect(resolveCalendar('auto', 'fr-FA')).toBe('gregorian')
+  })
+
   it('refreshes translated text when the document language changes', async () => {
     document.documentElement.lang = 'fa-IR'
     const translator = (message: string) =>
@@ -185,6 +205,21 @@ describe('formatLocaleDate', () => {
         timeZone: 'America/Los_Angeles',
       }),
     ).toBe('Mar 20, 2025')
+  })
+
+  it('formats Tehran datetimes across local midnight without shifting the day', () => {
+    document.documentElement.lang = 'fa-IR'
+    const options: Intl.DateTimeFormatOptions = {
+      calendar: 'persian',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      timeZone: 'Asia/Tehran',
+    }
+    const beforeMidnight = formatLocaleDate('2026-03-20T20:29:00Z', options)
+    const afterMidnight = formatLocaleDate('2026-03-20T20:30:00Z', options)
+    expect(beforeMidnight).toContain('۱۴۰۴/۱۲/۲۹')
+    expect(afterMidnight).toContain('۱۴۰۵/۰۱/۰۱')
   })
 
   it('returns an empty string for invalid and absent values', () => {

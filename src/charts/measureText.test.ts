@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   CHART_FONT_FAMILY,
+  getChartFontFamily,
   chartFont,
   installTextMeasurer,
   measureTextWidth,
@@ -26,6 +27,16 @@ afterEach(() => {
 })
 
 describe('measureTextWidth', () => {
+  it('selects Vazirmatn only for Persian document locales', () => {
+    const originalLocale = document.documentElement.lang
+    document.documentElement.lang = 'fa-IR'
+    expect(getChartFontFamily()).toBe('Vazirmatn, InterVar, Inter, sans-serif')
+    expect(chartFont(11)).toBe('11px Vazirmatn, InterVar, Inter, sans-serif')
+    document.documentElement.lang = 'en-US'
+    expect(getChartFontFamily()).toBe(CHART_FONT_FAMILY)
+    document.documentElement.lang = originalLocale
+  })
+
   it('draws the label in the font the plot renders it in', () => {
     stubLayout()
     expect(measureTextWidth('Direct', chartFont(11))).toBe(42)

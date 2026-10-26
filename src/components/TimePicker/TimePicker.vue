@@ -14,7 +14,7 @@
           :required="required"
           :variant="variant"
           :size="size"
-          :placeholder="placeholder"
+          :placeholder="localizedPlaceholder"
           :disabled="disabled"
           :readonly="isReadonly"
           role="combobox"
@@ -106,7 +106,7 @@ import {
 } from 'reka-ui'
 import { TextInput } from '../TextInput'
 import { usePortalTarget } from '../../composables/usePortalTarget'
-import { useDocumentLocale } from '../../localization/localization'
+import { useDocumentLocale, useLocalizedText } from '../../localization/localization'
 import '../shared/selection/popoverMotion.css'
 import {
   findNearestIndex,
@@ -140,6 +140,7 @@ const props = withDefaults(defineProps<TimePickerProps>(), {
 })
 
 const emit = defineEmits<TimePickerEmits>()
+const localizedPlaceholder = useLocalizedText(() => props.placeholder)
 
 const portalTarget = usePortalTarget()
 

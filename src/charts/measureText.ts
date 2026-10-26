@@ -1,3 +1,5 @@
+import { documentLocale } from '../utils/documentAttributes'
+
 /**
  * Text measured by the thing that draws it.
  *
@@ -18,12 +20,19 @@ const DEFAULT_FONT = '12px sans-serif'
 /** What the charts set as `textStyle.fontFamily`; every label inherits it. */
 export const CHART_FONT_FAMILY = 'InterVar, Inter, sans-serif'
 
+/** Use the bundled Persian font for chart labels when the UI language is fa. */
+export function getChartFontFamily(locale = documentLocale()): string {
+  return locale.toLowerCase().startsWith('fa')
+    ? 'Vazirmatn, InterVar, Inter, sans-serif'
+    : CHART_FONT_FAMILY
+}
+
 /**
  * The CSS font a label of `fontSize` is drawn with. Measuring and rendering
  * have to agree on the string, not just on the size.
  */
 export function chartFont(fontSize: number): string {
-  return `${fontSize}px ${CHART_FONT_FAMILY}`
+  return `${fontSize}px ${getChartFontFamily()}`
 }
 
 /**

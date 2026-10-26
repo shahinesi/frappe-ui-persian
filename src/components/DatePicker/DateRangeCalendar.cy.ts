@@ -69,10 +69,10 @@ describe('DateRangeCalendar', () => {
 
     cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'مهر ۱۴۰۵')
     cy.get('[aria-label=cycle-calendar-view]').click()
-    cy.get('[role=listbox][aria-label="Select year"]')
+    cy.get('[role=listbox][aria-label="انتخاب سال"]')
       .contains('button', '۱۴۰۴')
       .click()
-    cy.get('[role=listbox][aria-label="Select month"]')
+    cy.get('[role=listbox][aria-label="انتخاب ماه"]')
       .contains('button', 'مهر')
       .click()
     cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'مهر ۱۴۰۴')

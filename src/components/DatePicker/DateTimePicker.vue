@@ -16,7 +16,7 @@
     :required="props.required"
     :size="props.size"
     :variant="props.variant"
-    :placeholder="props.placeholder"
+    :placeholder="localizedPlaceholder"
     :disabled="props.disabled"
     :readonly="inputReadonly"
     :display-label="displayLabel"
@@ -46,7 +46,7 @@
         <aside
           v-if="$slots.actions"
           data-slot="actions"
-          aria-label="Shortcuts"
+          :aria-label="localizedShortcuts"
           class="flex flex-col p-2 gap-0.5"
         >
           <slot
@@ -68,7 +68,7 @@
             ref="calendarRef"
             :model-value="selectedDate"
             :calendar="props.calendar"
-            today-label="Now"
+            :today-label="localizedNow"
             :min="resolvedMin"
             :max="resolvedMax"
             :is-date-unavailable="props.isDateUnavailable"
@@ -82,7 +82,7 @@
               :typeable="props.typeable"
               side="bottom"
               align="start"
-              placeholder="Select time"
+              :placeholder="localizedTimePlaceholder"
               :min="computedMinTime"
               :max="computedMaxTime"
               @change="onTimeChange"
@@ -99,7 +99,7 @@ import { ref, computed, nextTick, watch } from 'vue'
 import TimePicker from '../TimePicker/TimePicker.vue'
 import { dayjs, dayjsLocal, dayjsSystem } from '../../utils/dayjs'
 import { resolveCalendar } from '../../localization/calendar'
-import { useDocumentLocale } from '../../localization/localization'
+import { useDocumentLocale, useLocalizedText } from '../../localization/localization'
 import {
   formatPersianDate,
   parsePersianDate,
@@ -136,6 +136,10 @@ const props = withDefaults(defineProps<DateTimePickerProps>(), {
   calendar: 'auto',
 })
 const emit = defineEmits<DateTimePickerEmits>()
+const localizedPlaceholder = useLocalizedText(() => props.placeholder)
+const localizedNow = useLocalizedText('Now')
+const localizedTimePlaceholder = useLocalizedText('Select time')
+const localizedShortcuts = useLocalizedText('Shortcuts')
 
 defineSlots<DateTimePickerSlots>()
 

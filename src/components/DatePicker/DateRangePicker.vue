@@ -16,7 +16,7 @@
     :required="props.required"
     :size="props.size"
     :variant="props.variant"
-    :placeholder="props.placeholder"
+    :placeholder="localizedPlaceholder"
     :disabled="props.disabled"
     :readonly="inputReadonly"
     :display-label="displayLabel"
@@ -44,7 +44,7 @@
         <aside
           v-if="$slots.actions"
           data-slot="actions"
-          aria-label="Shortcuts"
+          :aria-label="localizedShortcuts"
           class="flex flex-col p-2 gap-0.5"
         >
           <slot
@@ -83,8 +83,8 @@
 import { ref, computed, nextTick, watch } from 'vue'
 import { dayjs } from '../../utils/dayjs'
 import { formatPersianDate, parsePersianDate } from '../../localization/persianCalendar'
-import { resolveCalendar } from '../../localization/calendar'
-import { useDocumentLocale } from '../../localization/localization'
+import { isPersianLocale, resolveCalendar } from '../../localization/calendar'
+import { useDocumentLocale, useLocalizedText } from '../../localization/localization'
 import { orderRange, rangeKey, stepRange } from './utils'
 import DateRangeCalendar from './DateRangeCalendar.vue'
 import PickerShell from '../shared/picker/PickerShell.vue'
@@ -122,6 +122,8 @@ const props = withDefaults(defineProps<DateRangePickerProps>(), {
   calendar: 'auto',
 })
 const emit = defineEmits<DateRangePickerEmits>()
+const localizedPlaceholder = useLocalizedText(() => props.placeholder)
+const localizedShortcuts = useLocalizedText('Shortcuts')
 
 defineSlots<DateRangePickerSlots>()
 
@@ -273,7 +275,7 @@ function formatOne(dateStr: string): string {
 function formatDisplay(from: string, to: string): string {
   if (!from && !to) return ''
   if (from && !to) return formatOne(from)
-  const separator = locale.value.startsWith('fa') ? ' تا ' : ' to '
+  const separator = isPersianLocale(locale.value) ? ' تا ' : ' to '
   return `${formatOne(from)}${separator}${formatOne(to)}`
 }
 

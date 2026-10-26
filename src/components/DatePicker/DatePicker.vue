@@ -16,7 +16,7 @@
     :required="props.required"
     :size="props.size"
     :variant="props.variant"
-    :placeholder="props.placeholder"
+    :placeholder="localizedPlaceholder"
     :disabled="props.disabled"
     :readonly="inputReadonly"
     :display-label="displayLabel"
@@ -46,7 +46,7 @@
         <aside
           v-if="$slots.actions"
           data-slot="actions"
-          aria-label="Shortcuts"
+          :aria-label="localizedShortcuts"
           class="flex flex-col p-2 gap-0.5"
         >
           <slot
@@ -93,7 +93,7 @@ import {
 import type { Dayjs } from 'dayjs/esm'
 import { formatPersianDate, parsePersianDate } from '../../localization/persianCalendar'
 import { resolveCalendar } from '../../localization/calendar'
-import { useDocumentLocale } from '../../localization/localization'
+import { useDocumentLocale, useLocalizedText } from '../../localization/localization'
 import type { DatePickerProps, DatePickerEmits, DatePickerSlots } from './types'
 import type { DateCalendarExposed } from './calendarTypes'
 import type {
@@ -114,6 +114,8 @@ const props = withDefaults(defineProps<DatePickerProps>(), {
   calendar: 'auto',
 })
 const emit = defineEmits<DatePickerEmits>()
+const localizedPlaceholder = useLocalizedText(() => props.placeholder)
+const localizedShortcuts = useLocalizedText('Shortcuts')
 
 defineSlots<DatePickerSlots>()
 

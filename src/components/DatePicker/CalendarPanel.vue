@@ -65,7 +65,7 @@
         v-if="view === 'date'"
         ref="gridRef"
         role="grid"
-        aria-label="Calendar dates"
+        :aria-label="localizedCalendarDates"
         @mouseleave="emit('hoverCell', null)"
       >
         <div
@@ -175,12 +175,12 @@
           </div>
         </div>
       </div>
-      <div v-else class="flex h-52 w-52" aria-label="Select month and year">
+      <div v-else class="flex h-52 w-52" :aria-label="localizedMonthAndYear">
         <div
           ref="yearListRef"
           class="relative flex w-1/2 flex-col gap-0.5 overflow-y-auto"
           role="listbox"
-          aria-label="Select year"
+          :aria-label="localizedYear"
         >
           <button
             v-for="y in years"
@@ -203,7 +203,7 @@
           ref="monthListRef"
           class="relative flex w-1/2 flex-col gap-0.5 overflow-y-auto pl-1.5"
           role="listbox"
-          aria-label="Select month"
+          :aria-label="localizedMonth"
         >
           <button
             v-for="(m, i) in displayMonths"
@@ -231,6 +231,7 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import type { Dayjs } from 'dayjs/esm'
 import { Button } from '../Button'
+import { useLocalizedText } from '../../localization/localization'
 import { months } from './utils'
 import type {
   CalendarPanelCell,
@@ -250,6 +251,10 @@ const props = withDefaults(defineProps<CalendarPanelProps>(), {
   prevDisabled: false,
   nextDisabled: false,
 })
+const localizedCalendarDates = useLocalizedText('Calendar dates')
+const localizedMonthAndYear = useLocalizedText('Select month and year')
+const localizedYear = useLocalizedText('Select year')
+const localizedMonth = useLocalizedText('Select month')
 
 const emit = defineEmits<{
   (e: 'prev'): void

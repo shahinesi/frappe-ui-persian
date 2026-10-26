@@ -42,7 +42,7 @@ import {
   MIN_SUPPORTED_YEAR,
 } from '../../localization/persianCalendar'
 import { resolveCalendar } from '../../localization/calendar'
-import { useDocumentLocale } from '../../localization/localization'
+import { useDocumentLocale, useLocalizedText } from '../../localization/localization'
 import CalendarPanel from './CalendarPanel.vue'
 import { makeUnavailableCheck, useCalendarView } from './composables'
 import { generateWeeks } from './utils'
@@ -59,6 +59,7 @@ const props = withDefaults(defineProps<DateCalendarProps>(), {
   todayLabel: 'Today',
   calendar: 'auto',
 })
+const localizedTodayLabel = useLocalizedText(() => props.todayLabel)
 
 const emit = defineEmits<DateCalendarEmits>()
 
@@ -191,14 +192,7 @@ const monthLabels = computed(() => {
 const weekdayLabels = computed(() => persianMonthData.value?.weekdayLabels)
 const weekdayAriaLabels = computed(() => persianMonthData.value?.weekdayAriaLabels)
 const yearLabel = computed(() => persianMonthData.value?.yearLabel)
-const resolvedTodayLabel = computed(
-  () =>
-    isPersian.value &&
-    props.todayLabel === 'Today' &&
-    locale.value.startsWith('fa')
-      ? 'امروز'
-      : props.todayLabel,
-)
+const resolvedTodayLabel = computed(() => localizedTodayLabel.value)
 const formatYear = computed(() =>
   isPersian.value
     ? (year: number) =>

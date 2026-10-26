@@ -17,7 +17,7 @@
       :selectable-years="selectableYears"
       :format-year="formatYear"
       :weeks="weeks"
-      :today-label="isDualPaneActive ? '' : todayLabel"
+      :today-label="isDualPaneActive ? '' : localizedTodayLabel"
       :prev-disabled="isPersian && prevDisabled"
       :next-disabled="isPersian && nextDisabled"
       :hide-next="isDualPaneActive"
@@ -79,7 +79,7 @@ import {
   MIN_SUPPORTED_YEAR,
 } from '../../localization/persianCalendar'
 import { resolveCalendar } from '../../localization/calendar'
-import { useDocumentLocale } from '../../localization/localization'
+import { useDocumentLocale, useLocalizedText } from '../../localization/localization'
 import CalendarPanel from './CalendarPanel.vue'
 import { makeUnavailableCheck, useCalendarView } from './composables'
 import { generatePersianWeeks } from './persianUtils'
@@ -99,6 +99,7 @@ const props = withDefaults(defineProps<DateRangeCalendarProps>(), {
   calendar: 'auto',
 })
 const emit = defineEmits<DateRangeCalendarEmits>()
+const localizedTodayLabel = useLocalizedText(() => props.todayLabel)
 const model = defineModel<DateRangeValue>({ default: () => [] })
 const DATE_FORMAT = 'YYYY-MM-DD'
 const { locale, direction } = useDocumentLocale()
@@ -248,12 +249,6 @@ const selectableYears = computed(() => {
   const end = Math.min(MAX_SUPPORTED_YEAR, Math.max(maxYear, activeYear.value))
   return Array.from({ length: Math.max(0, end - start + 1) }, (_, index) => start + index)
 })
-const todayLabel = computed(() =>
-  isPersian.value && props.todayLabel === 'Today' && locale.value.startsWith('fa')
-    ? 'امروز'
-    : props.todayLabel,
-)
-
 const leftPanelRef = ref<CalendarPanelExposed | null>(null)
 const rightPanelRef = ref<CalendarPanelExposed | null>(null)
 const focusedDate = ref<Dayjs | null>(null)

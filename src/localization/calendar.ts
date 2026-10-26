@@ -6,11 +6,16 @@ export * from './persianCalendar'
 export type CalendarPreference = 'auto' | 'gregorian' | 'persian'
 export type ResolvedCalendar = Exclude<CalendarPreference, 'auto'>
 
+/** Match the Persian language subtag regardless of BCP 47 casing. */
+export function isPersianLocale(locale: string): boolean {
+  return /^fa(?:-|$)/i.test(locale)
+}
+
 /** Resolve the display calendar without changing canonical Gregorian values. */
 export function resolveCalendar(
   preference: CalendarPreference | undefined,
   locale = readDocumentLocale(),
 ): ResolvedCalendar {
   if (preference === 'gregorian' || preference === 'persian') return preference
-  return /^fa(?:-|$)/i.test(locale) ? 'persian' : 'gregorian'
+  return isPersianLocale(locale) ? 'persian' : 'gregorian'
 }

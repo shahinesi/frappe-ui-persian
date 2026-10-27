@@ -10,8 +10,11 @@ export default mergeConfig(
         enforce: 'pre',
         transform(source, id) {
           const normalizedId = id.replaceAll('\\', '/')
+          const isMigrationCli =
+            normalizedId.includes('/scripts/migrate-') ||
+            normalizedId.endsWith('/tailwind/migrate-tokens-v2.js')
           if (
-            !normalizedId.includes('/scripts/migrate-') ||
+            !isMigrationCli ||
             !normalizedId.endsWith('.js') ||
             !source.startsWith('#!')
           )

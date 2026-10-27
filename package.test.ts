@@ -274,7 +274,7 @@ function shippedFiles(): string[] {
       if (entry.isDirectory()) walk(full)
       else if (
         /\.(ts|js|vue|mjs|cjs)$/.test(entry.name) &&
-        !NOT_SHIPPED.test(`/${relative}`)
+        !NOT_SHIPPED.test(`/${relative.replaceAll('\\', '/')}`)
       )
         out.push(relative)
     }

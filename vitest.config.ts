@@ -4,6 +4,23 @@ import viteConfig from './vite.config'
 export default mergeConfig(
   viteConfig,
   defineConfig({
+    plugins: [
+      {
+        name: 'strip-cli-shebang-in-tests',
+        enforce: 'pre',
+        transform(source, id) {
+          const normalizedId = id.replaceAll('\\', '/')
+          if (
+            !normalizedId.includes('/scripts/migrate-') ||
+            !normalizedId.endsWith('.js') ||
+            !source.startsWith('#!')
+          )
+            return
+
+          return source.replace(/^[^\r\n]*(?:\r?\n|$)/, '')
+        },
+      },
+    ],
     test: {
       globals: true,
       root: __dirname,

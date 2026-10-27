@@ -16,6 +16,8 @@ const packageRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '..',
 )
+const toPosixPath = (value) => value.split(path.sep).join('/')
+const packageRootPosix = toPosixPath(packageRoot)
 
 /** Directories under `experimental/` that `experimental.ts` re-exports. */
 function reExportedDirectories() {
@@ -33,7 +35,7 @@ function reExportedDirectories() {
 /** The leading directory of each glob, relative to the package root. */
 function globbedDirectories(prefix) {
   return content
-    .map((glob) => path.relative(packageRoot, glob))
+    .map((glob) => toPosixPath(path.relative(packageRoot, glob)))
     .filter((glob) => glob.startsWith(`${prefix}/`))
     .map((glob) => glob.split('/')[1])
     .sort()
@@ -65,7 +67,7 @@ describe('content globs', () => {
   it('resolves every glob against this package, not the consumer', () => {
     for (const glob of content.map(withoutNegation)) {
       expect(path.isAbsolute(glob), glob).toBe(true)
-      expect(glob.startsWith(packageRoot), glob).toBe(true)
+      expect(toPosixPath(glob).startsWith(packageRootPosix), glob).toBe(true)
       // Tailwind's scanner reads a backslash as an escape, not a separator.
       expect(glob).not.toContain('\\')
     }

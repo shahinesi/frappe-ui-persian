@@ -262,9 +262,13 @@ export function formatLocaleDateRange(
           mapJalaliDatePart(part, endFields, locale, options),
     )
     if (hasCollapsedJalaliField) {
-      const lastStartPart = rangeParts.findLastIndex(
-        (part) => part.source === 'startRange',
-      )
+      let lastStartPart = -1
+      for (let index = rangeParts.length - 1; index >= 0; index--) {
+        if (rangeParts[index].source === 'startRange') {
+          lastStartPart = index
+          break
+        }
+      }
       const firstEndPart = rangeParts.findIndex(
         (part) => part.source === 'endRange',
       )

@@ -165,9 +165,9 @@ describe('formatPercent', () => {
     vi.stubGlobal('MutationObserver', undefined)
     try {
       vi.stubGlobal('document', { documentElement: { lang: 'fa-IR' } })
-      expect(formatPercent(0)).toBe('۰٪')
-      expect(formatPercent(0.4)).toBe('<۱٪')
-      expect(formatPercent(12.6)).toBe('۱۳٪')
+      expect(formatPercent(0)).toBe('0%')
+      expect(formatPercent(0.4)).toBe('<1%')
+      expect(formatPercent(12.6)).toBe('13%')
 
       vi.stubGlobal('document', { documentElement: { lang: 'en-US' } })
       expect(formatPercent(0)).toBe('0%')

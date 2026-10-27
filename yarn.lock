@@ -1010,6 +1010,13 @@
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
+"@persian-tools/persian-tools@^4.0.4":
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/@persian-tools/persian-tools/-/persian-tools-4.0.4.tgz#1e5e72ebe134e50a25c2933066503d828d7de85c"
+  integrity sha512-dGcyKFXFYWDZc6MtkvpYfZ3RYUp7QhH/1u6Tgpv7GY6zxjRsGmZJ9NOH/NxmO6+BEdfqBzCC9egLg6Xt9hZlNw==
+  dependencies:
+    fastest-levenshtein "^1.0.16"
+
 "@popperjs/core@^2.9.0":
   version "2.11.8"
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
@@ -3389,6 +3396,11 @@ fast-shuffle@^6.1.0:
   dependencies:
     pcg "1.1.0"
 
+fastest-levenshtein@^1.0.16:
+  version "1.0.16"
+  resolved "https://registry.yarnpkg.com/fastest-levenshtein/-/fastest-levenshtein-1.0.16.tgz#210e61b6ff181de91ea9b3d1b84fdedd47e034e5"
+  integrity sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg==
+
 fastq@^1.6.0:
   version "1.20.1"
   resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.20.1.tgz#ca750a10dc925bc8b18839fd203e3ef4b3ced675"
@@ -4259,6 +4271,11 @@ jiti@^1.21.7:
   version "1.21.7"
   resolved "https://registry.yarnpkg.com/jiti/-/jiti-1.21.7.tgz#9dd81043424a3d28458b193d965f0d18a2300ba9"
   integrity sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==
+
+jalaali-js@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/jalaali-js/-/jalaali-js-2.0.1.tgz#515e422d0287d52e734640e3d467998b4dd56a8d"
+  integrity sha512-qzTmjw6lZ3V4znyNA8ceYoGgFR+CcF+xEfIYZNcK2ZR0mzdMpMZ6iAcdRPvMgxUVdPMh6QLWCANpTcCJow2U+Q==
 
 js-tokens@^10.0.0:
   version "10.0.0"

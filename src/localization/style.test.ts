@@ -30,12 +30,14 @@ describe('localization stylesheet assets', () => {
     expect(stylesheet).toContain("font-family: Vazirmatn")
     expect(stylesheet).toContain("url('../fonts/Vazirmatn/Vazirmatn-wght.woff2')")
     expect(stylesheet).toContain('.fui-vazirmatn')
+    expect(stylesheet).toContain('font-feature-settings: "ss01"')
     const baseStylesheet = readFileSync(
       resolve(packageRoot, 'src/style.css'),
       'utf8',
     )
     expect(baseStylesheet).toContain("@import './localization/style.css'")
     expect(baseStylesheet).toContain('html:lang(fa)')
+    expect(baseStylesheet).toContain('font-feature-settings: "ss01"')
     expect(existsSync(fontPath)).toBe(true)
     expect(license).toContain('SIL OPEN FONT LICENSE Version 1.1')
   })

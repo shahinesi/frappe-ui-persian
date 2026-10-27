@@ -47,11 +47,12 @@ rangeSeparator: ' to ' }`.
 
 The formatting helpers only produce display strings. A date-only `YYYY-MM-DD`
 value is interpreted as a UTC calendar date to avoid timezone day shifts. An
-explicit `calendar: 'persian'` asks the browser's `Intl` implementation to
-render that Gregorian input using the Persian calendar. The original value, API
-payload, and database representation are unchanged. Missing or invalid date
-values format as empty. `null`, `undefined`, and `NaN` number values format as
-empty; zero formats as zero.
+explicit `calendar: 'persian'` formats the Gregorian input with `jalaali-js`;
+the Gregorian value, API payload, and database representation stay unchanged.
+Number formatters keep numeric digits canonical ASCII (`numberingSystem: 'latn'`)
+so Vazirmatn can render its Persian digit glyphs without changing the text data.
+Missing or invalid date values format as empty. `null`, `undefined`, and `NaN`
+number values format as empty; zero formats as zero.
 
 `DatePicker`, `DateRangePicker`, and `DateTimePicker` accept a `calendar`
 preference. The default `auto` follows the document locale: `fa` locales use
@@ -81,11 +82,12 @@ const displayFields = getPersianDateFromISO(selected)
 ```
 
 The grid contains six weeks, always ordered Saturday through Friday. Each cell
-includes a Persian day label and a Gregorian `isoDate`; pass that ISO value to
-the DatePicker model or backend without converting the stored value. The model
-is also used by the interactive Persian calendar. Its supported Persian years
-are 1200–1600. Calendar conversion uses the runtime's `Intl` Persian calendar
-implementation, so no date-conversion dependency is bundled.
+includes a Persian day label with canonical ASCII digits and a Gregorian
+`isoDate`; pass that ISO value to the DatePicker model or backend without
+converting the stored value. The model is also used by the interactive Persian
+calendar. Its supported Persian years are 1200–1600. Gregorian/Jalali
+conversion and calendar math use the `jalaali-js` dependency; do not replace it
+with `Intl` calendar conversion or a hand-written algorithm.
 
 ## Vazirmatn
 
@@ -100,7 +102,13 @@ import 'frappe-ui/localization/style.css'
 <section class="fui-vazirmatn">Persian text</section>
 ```
 
-The `.fui-vazirmatn` class applies the bundled `Vazirmatn` font with a
-sans-serif fallback. It is opt-in: importing the stylesheet does not change
-typography outside elements carrying this class. Font loading uses
-`font-display: swap`.
+The `.fui-vazirmatn` class applies the bundled `Vazirmatn` font with the
+`ss01` OpenType feature enabled, so canonical ASCII digits render using the
+font's Persian digit glyphs. It is opt-in: importing the stylesheet does not
+change typography outside elements carrying this class. The main Frappe UI
+stylesheet also applies Vazirmatn and `ss01` to Persian-language documents.
+Font loading uses `font-display: swap`.
+
+For accepted text input only, normalize Persian/Arabic numerals at the input
+boundary with `@persian-tools/persian-tools`. Never convert rendered digits to
+Persian Unicode characters; keep display strings canonical.

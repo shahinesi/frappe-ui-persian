@@ -101,9 +101,10 @@ import { dayjs, dayjsLocal, dayjsSystem } from '../../utils/dayjs'
 import { resolveCalendar } from '../../localization/calendar'
 import { useDocumentLocale, useLocalizedText } from '../../localization/localization'
 import {
-  formatPersianDate,
-  parsePersianDate,
-} from '../../localization/persianCalendar'
+  formatPersianDateTime,
+  parseCanonicalDateTimeInput,
+  parsePersianDateTimeInput,
+} from './dateTimeFormat'
 import DateCalendar from './DateCalendar.vue'
 import PickerShell from '../shared/picker/PickerShell.vue'
 import {
@@ -288,24 +289,15 @@ const combinedValue = computed<string>(() => {
 
 const displayLabel = computed<string>(() => {
   if (!combinedValue.value) return ''
-  if (props.format) return dayjs(combinedValue.value).format(props.format)
   if (isPersianCalendar.value) {
-    const date = formatPersianDate(selectedDate.value, locale.value)
-    const time = timeValue.value || '00:00:00'
-    const numberFormatter = new Intl.NumberFormat(locale.value, {
-      useGrouping: false,
-    })
-    const localizedZero = numberFormatter.format(0)
-    const localizedTime = time
-      .split(':')
-      .map((part) =>
-        numberFormatter
-          .format(Number(part))
-          .padStart(2, localizedZero),
-      )
-      .join(':')
-    return `${date} ${localizedTime}`
+    return formatPersianDateTime(
+      selectedDate.value,
+      timeValue.value || '00:00:00',
+      locale.value,
+      props.format || 'YYYY/MM/DD HH:mm:ss',
+    )
   }
+  if (props.format) return dayjs(combinedValue.value).format(props.format)
   return combinedValue.value
 })
 
@@ -354,8 +346,13 @@ function commitInput(close = false): void {
     return
   }
   const parsed =
-    isPersianCalendar.value && !props.format
-      ? parsePersianDateTimeInput(raw, locale.value) ?? coerceToDayjs(raw)
+    isPersianCalendar.value
+      ? parsePersianDateTimeInput(
+          raw,
+          locale.value,
+          props.format || 'YYYY/MM/DD HH:mm:ss',
+        ) ??
+        parseCanonicalDateTimeInput(raw)
       : coerceToDayjs(raw)
   if (parsed && !checkUnavailable(parsed)) {
     selectDate(parsed)
@@ -365,31 +362,6 @@ function commitInput(close = false): void {
   } else {
     inputValue.value = displayLabel.value
   }
-}
-
-function parsePersianDateTimeInput(
-  raw: string,
-  activeLocale: string,
-): Dayjs | null {
-  const normalized = raw
-    .replace(/[۰-۹]/g, (digit) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)))
-    .replace(/[٠-٩]/g, (digit) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)))
-  const match = /^(.+?)(?:\s+(\d{1,2}:\d{2}(?::\d{2})?))?$/.exec(
-    normalized,
-  )
-  if (!match) return null
-
-  const isoDate = parsePersianDate(match[1], 'YYYY/MM/DD', activeLocale)
-  if (!isoDate) return null
-
-  const time = match[2] ?? '00:00:00'
-  const normalizedTime = time.length === 5 ? `${time}:00` : time
-  if (!/^\d{2}:\d{2}:\d{2}$/.test(normalizedTime)) return null
-  const [hours, minutes, seconds] = normalizedTime.split(':').map(Number)
-  if (hours > 23 || minutes > 59 || seconds > 59) return null
-
-  const parsed = dayjs(`${isoDate} ${normalizedTime}`)
-  return parsed.isValid() ? parsed : null
 }
 
 function selectDate(date: string | Date | Dayjs): void {

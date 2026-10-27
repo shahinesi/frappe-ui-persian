@@ -239,7 +239,7 @@ const weekdayAriaLabels = computed(() => currentMonthData.value?.weekdayAriaLabe
 const yearLabel = computed(() => currentMonthData.value?.yearLabel)
 const rightYearLabel = computed(() => rightMonthData.value?.yearLabel)
 const formatYear = computed(() => isPersian.value
-  ? (year: number) => new Intl.NumberFormat(locale.value, { useGrouping: false }).format(year)
+  ? (year: number) => String(year)
   : undefined)
 const selectableYears = computed(() => {
   if (!isPersian.value) return undefined

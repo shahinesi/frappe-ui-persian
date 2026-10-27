@@ -81,7 +81,7 @@ export interface DatePickerProps extends CommonDatePickerProps {
   /** Controlled value for the picker. */
   modelValue?: string
 
-  /** Calendar system for presentation. Labels and digits follow the document locale. Defaults to Persian for `fa` locales and Gregorian otherwise. */
+  /** Calendar system for presentation. Month and weekday labels follow the document locale; numeric text stays canonical for the active font. Defaults to Persian for `fa` locales and Gregorian otherwise. */
   calendar?: CalendarPreference
 
   /** Label for the action that selects today. Empty hides the action. Default: `Today`. */
@@ -100,7 +100,7 @@ export interface DateRangePickerProps extends CommonDatePickerProps {
    */
   modelValue?: DateRangeValue
 
-  /** Calendar system for presentation. Labels and digits follow the document locale. Defaults to Persian for `fa` locales and Gregorian otherwise. */
+  /** Calendar system for presentation. Month and weekday labels follow the document locale; numeric text stays canonical for the active font. Defaults to Persian for `fa` locales and Gregorian otherwise. */
   calendar?: CalendarPreference
 
   /** Label for the action that selects today. Empty hides the action. Default: `Today`. */
@@ -136,7 +136,7 @@ export interface DateTimePickerProps extends CommonDatePickerProps {
   /** Controlled value for the picker. */
   modelValue?: string
 
-  /** Calendar system for presentation. Labels and digits follow the document locale. Defaults to Persian for `fa` locales and Gregorian otherwise. */
+  /** Calendar system for presentation. Month and weekday labels follow the document locale; numeric text stays canonical for the active font. Defaults to Persian for `fa` locales and Gregorian otherwise. */
   calendar?: CalendarPreference
 }
 

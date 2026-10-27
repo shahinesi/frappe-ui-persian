@@ -11,7 +11,9 @@ import {
   documentDir,
   documentLocale,
 } from '#utils/documentAttributes'
+import { toJalaali } from 'jalaali-js'
 import { isPersianLocale } from './calendar'
+import { getPersianMonthName } from './persianCalendar'
 export { resolveCalendar } from './calendar'
 export type { CalendarPreference, ResolvedCalendar } from './calendar'
 
@@ -106,12 +108,16 @@ export function formatLocaleNumber(
   options: Intl.NumberFormatOptions = {},
 ): string {
   if (value === null || value === undefined || Number.isNaN(value)) return ''
-  return new Intl.NumberFormat(documentLocale(), options).format(value)
+  return new Intl.NumberFormat(documentLocale(), {
+    ...options,
+    numberingSystem: 'latn',
+  }).format(value)
 }
 
 /**
  * Format a percentage value expressed in percentage points (for example, 12.5
- * means 12.5%). The document locale controls digits and the percent symbol.
+ * means 12.5%). Keep digit characters canonical for the document font to
+ * render; the document locale still controls other number formatting.
  */
 export function formatLocalePercent(
   value: number | null | undefined,
@@ -121,11 +127,14 @@ export function formatLocalePercent(
   return new Intl.NumberFormat(documentLocale(), {
     ...options,
     style: 'percent',
+    numberingSystem: 'latn',
   }).format(value / 100)
 }
 
 /**
- * Format a date for display using the document language and Intl calendar data.
+ * Format a date for display using the document language and jalaali-js when
+ * Persian calendar presentation is requested or the document language is
+ * Persian.
  * A date-only ISO value is interpreted as a calendar date in UTC, so it cannot
  * shift to the previous day when the browser is behind UTC. When no options are
  * given, the browser formats a medium-length date in UTC. Pass `calendar:
@@ -153,13 +162,27 @@ export function formatLocaleDate(
   if (parsed.dateOnly) formatOptions.timeZone = 'UTC'
   else if (!formatOptions.timeZone) formatOptions.timeZone = 'UTC'
 
-  return new Intl.DateTimeFormat(documentLocale(), formatOptions).format(
-    parsed.date,
-  )
+  const locale = documentLocale()
+  const usePersianCalendar = shouldUsePersianCalendar(options.calendar, locale)
+  const formatter = new Intl.DateTimeFormat(locale, {
+    ...formatOptions,
+    ...(usePersianCalendar ? { calendar: 'gregory' } : {}),
+    numberingSystem: 'latn',
+  })
+  if (usePersianCalendar) {
+    return formatJalaliParts(
+      formatter.formatToParts(parsed.date),
+      getJalaliFields(parsed.date, formatOptions.timeZone),
+      locale,
+      options,
+    )
+  }
+  return formatter.format(parsed.date)
 }
 
 /**
- * Format a date range using the document language and Intl calendar data.
+ * Format a date range using the document language and jalaali-js for Persian
+ * calendar presentation.
  * Date-only `YYYY-MM-DD` endpoints are interpreted as UTC calendar dates to
  * avoid timezone day shifts. Inputs remain unchanged; invalid or absent
  * endpoints, and reversed ranges, return an empty string.
@@ -202,13 +225,145 @@ export function formatLocaleDateRange(
     formatOptions.timeZone = 'UTC'
   }
 
-  const formatter = new Intl.DateTimeFormat(documentLocale(), formatOptions)
+  const locale = documentLocale()
+  const usePersianCalendar = shouldUsePersianCalendar(options.calendar, locale)
+  const formatter = new Intl.DateTimeFormat(locale, {
+    ...formatOptions,
+    ...(usePersianCalendar ? { calendar: 'gregory' } : {}),
+    numberingSystem: 'latn',
+  })
+  if (usePersianCalendar) {
+    const startFields = getJalaliFields(parsedStart.date, formatOptions.timeZone)
+    const endFields = getJalaliFields(parsedEnd.date, formatOptions.timeZone)
+    if (rangeSeparator !== undefined) {
+      const startText = formatJalaliParts(
+        formatter.formatToParts(parsedStart.date),
+        startFields,
+        locale,
+        options,
+      )
+      const endText = formatJalaliParts(
+        formatter.formatToParts(parsedEnd.date),
+        endFields,
+        locale,
+        options,
+      )
+      return `${startText}${rangeSeparator}${endText}`
+    }
+    const rangeParts = formatter.formatRangeToParts(
+      parsedStart.date,
+      parsedEnd.date,
+    )
+    const hasCollapsedJalaliField = rangeParts.some(
+      (part) =>
+        part.source === 'shared' &&
+        ['year', 'month', 'day'].includes(part.type) &&
+        mapJalaliDatePart(part, startFields, locale, options) !==
+          mapJalaliDatePart(part, endFields, locale, options),
+    )
+    if (hasCollapsedJalaliField) {
+      const lastStartPart = rangeParts.findLastIndex(
+        (part) => part.source === 'startRange',
+      )
+      const firstEndPart = rangeParts.findIndex(
+        (part) => part.source === 'endRange',
+      )
+      const separator = rangeParts
+        .slice(lastStartPart + 1, firstEndPart)
+        .find((part) => part.type === 'literal' && part.source === 'shared')
+        ?.value ?? ' – '
+      const startText = formatJalaliParts(
+        formatter.formatToParts(parsedStart.date),
+        startFields,
+        locale,
+        options,
+      )
+      const endText = formatJalaliParts(
+        formatter.formatToParts(parsedEnd.date),
+        endFields,
+        locale,
+        options,
+      )
+      return `${startText}${separator}${endText}`
+    }
+    return rangeParts
+      .map((part) => {
+        const fields = part.source === 'endRange' ? endFields : startFields
+        return mapJalaliDatePart(part, fields, locale, options)
+      })
+      .join('')
+  }
   if (rangeSeparator !== undefined) {
     return `${formatter.format(parsedStart.date)}${rangeSeparator}${formatter.format(
       parsedEnd.date,
     )}`
   }
   return formatter.formatRange(parsedStart.date, parsedEnd.date)
+}
+
+function shouldUsePersianCalendar(
+  requestedCalendar: string | undefined,
+  locale: string,
+): boolean {
+  return requestedCalendar === 'persian' ||
+    (requestedCalendar === undefined && isPersianLocale(locale))
+}
+
+function getJalaliFields(date: Date, timeZone = 'UTC') {
+  const parts = new Intl.DateTimeFormat('en-US-u-ca-gregory-nu-latn', {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    timeZone,
+  }).formatToParts(date)
+  const fields = Object.fromEntries(parts.map(({ type, value }) => [type, value]))
+  return toJalaali(Number(fields.year), Number(fields.month), Number(fields.day))
+}
+
+function formatJalaliParts(
+  parts: Intl.DateTimeFormatPart[],
+  fields: ReturnType<typeof toJalaali>,
+  locale: string,
+  options: Intl.DateTimeFormatOptions,
+): string {
+  return parts.map((part) => mapJalaliDatePart(part, fields, locale, options)).join('')
+}
+
+function mapJalaliDatePart(
+  part: Intl.DateTimeFormatPart & { source?: 'startRange' | 'endRange' | 'shared' },
+  fields: ReturnType<typeof toJalaali>,
+  locale: string,
+  options: Intl.DateTimeFormatOptions,
+): string {
+  if (part.type === 'year') {
+    return options.year === '2-digit'
+      ? String(fields.jy % 100).padStart(2, '0')
+      : String(fields.jy)
+  }
+  if (part.type === 'day') {
+    return options.day === '2-digit'
+      ? String(fields.jd).padStart(2, '0')
+      : String(fields.jd)
+  }
+  if (part.type === 'month') {
+    if (options.month === 'numeric' || options.month === '2-digit') {
+      return options.month === '2-digit'
+        ? String(fields.jm).padStart(2, '0')
+        : String(fields.jm)
+    }
+    const monthStyle =
+      options.month ??
+      (options.dateStyle === 'long' || options.dateStyle === 'full'
+        ? 'long'
+        : 'short')
+    return getPersianMonthName(
+      fields.jy,
+      fields.jm,
+      locale,
+      monthStyle === 'narrow' ? 'short' : monthStyle,
+    )
+  }
+  return part.value
 }
 
 function parseDisplayDate(

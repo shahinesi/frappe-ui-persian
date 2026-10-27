@@ -67,15 +67,15 @@ describe('DateRangeCalendar', () => {
     })
     mountCalendar(['2026-10-15', '2026-10-15'], { calendar: 'persian' })
 
-    cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'مهر ۱۴۰۵')
+    cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'مهر 1405')
     cy.get('[aria-label=cycle-calendar-view]').click()
     cy.get('[role=listbox][aria-label="انتخاب سال"]')
-      .contains('button', '۱۴۰۴')
+      .contains('button', '1404')
       .click()
     cy.get('[role=listbox][aria-label="انتخاب ماه"]')
       .contains('button', 'مهر')
       .click()
-    cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'مهر ۱۴۰۴')
+    cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'مهر 1404')
   })
 
   it('first click opens the range, second closes it', () => {

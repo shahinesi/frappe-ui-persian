@@ -68,14 +68,14 @@ describe('DatePicker', () => {
       },
     })
 
-    cy.get('input').should('have.value', '۱۴۰۵/۱۰/۱۱').dblclick()
-    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'دی ۱۴۰۵')
+    cy.get('input').should('have.value', '1405/10/11').dblclick()
+    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'دی 1405')
     cy.get('[title="شنبه"]').should('have.text', 'ش')
     cy.get('[title="یکشنبه"]').should('have.text', 'ی')
     cy.get('[title="جمعه"]').should('have.text', 'ج')
     cy.get('[data-value="2027-01-02"]').click()
     cy.get('@updateModel').should('have.been.calledWith', '2027-01-02')
-    cy.get('input').should('have.value', '۱۴۰۵/۱۰/۱۲')
+    cy.get('input').should('have.value', '1405/10/12')
   })
 
   it('automatically uses Persian labels for a Persian locale without mixing Gregorian months', () => {
@@ -85,7 +85,7 @@ describe('DatePicker', () => {
     })
     cy.mount(DatePicker, { props: { modelValue: '2026-10-01' } })
     cy.get('input').dblclick()
-    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'مهر ۱۴۰۵')
+    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'مهر 1405')
     cy.get('[title="شنبه"]').should('have.text', 'ش')
     cy.get('[title="یکشنبه"]').should('have.text', 'ی')
     cy.get('[title="دوشنبه"]').should('have.text', 'د')
@@ -114,7 +114,7 @@ describe('DatePicker', () => {
       cy.get('input').dblclick()
       cy.get('[aria-label="cycle-calendar-view"]').should(
         'have.text',
-        'مهر ۱۴۰۵',
+        'مهر 1405',
       )
       cy.get('[role="grid"] [role="row"]')
         .first()
@@ -137,7 +137,7 @@ describe('DatePicker', () => {
           ])
         })
       cy.get('[data-value="2026-10-02"]')
-        .should('have.text', '۱۰')
+        .should('have.text', '10')
         .click()
       cy.get('@updateModel').should('have.been.calledWith', '2026-10-02')
     },
@@ -162,7 +162,7 @@ describe('DatePicker', () => {
     })
     cy.mount(DatePicker, { props: { modelValue: '2026-10-01' } })
     cy.get('input').dblclick()
-    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'مهر ۱۴۰۵')
+    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'مهر 1405')
 
     cy.document().then((document) => {
       document.documentElement.lang = 'en-US'
@@ -175,7 +175,7 @@ describe('DatePicker', () => {
       document.documentElement.lang = 'fa-IR'
       document.documentElement.dir = 'rtl'
     })
-    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'مهر ۱۴۰۵')
+    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'مهر 1405')
   })
 
   it('renders', () => {

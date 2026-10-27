@@ -19,6 +19,7 @@
 /* Load the bundled Persian font automatically for every Frappe UI consumer. */
 html:lang(fa) {
   font-family: Vazirmatn, InterVar, Inter, sans-serif;
+  font-feature-settings: "ss01";
 }
 
 html:lang(fa) :is(button, input, select, textarea),

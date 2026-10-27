@@ -100,7 +100,7 @@ describe('TimePicker', () => {
     cy.get('[role=option]').eq(0).should('have.text', '00:00')
   })
 
-  it('localizes time digits in Persian and accepts them without changing the canonical value', () => {
+  it('keeps display digits canonical and accepts Persian input without changing the model', () => {
     cy.document().then((document) => {
       document.documentElement.lang = 'fa-IR'
       document.documentElement.dir = 'rtl'
@@ -114,23 +114,23 @@ describe('TimePicker', () => {
       },
     })
 
-    cy.get('input').should('have.value', '۱۲:۳۰').click()
-    cy.get('[role=option][data-value="13:00"]').should('have.text', '۱۳:۰۰')
+    cy.get('input').should('have.value', '12:30').click()
+    cy.get('[role=option][data-value="13:00"]').should('have.text', '13:00')
     cy.get('[role=option][data-value="13:00"]').click()
     cy.get('@onUpdate').should('have.been.calledWith', '13:00')
-    cy.get('input').should('have.value', '۱۳:۰۰').clear().type('۱۶:۴۵{enter}')
+    cy.get('input').should('have.value', '13:00').clear().type('۱۶:۴۵{enter}')
     cy.get('@onUpdate').should('have.been.calledWith', '16:45')
-    cy.get('input').should('have.value', '۱۶:۴۵')
+    cy.get('input').should('have.value', '16:45')
   })
 
-  it('reactively switches time digits with the document locale', () => {
+  it('keeps time digits canonical across document locale changes', () => {
     cy.document().then((document) => {
       document.documentElement.lang = 'fa-IR'
       document.documentElement.dir = 'rtl'
     })
     cy.mount(TimePicker, { props: { modelValue: '12:30' } })
 
-    cy.get('input').should('have.value', '۱۲:۳۰')
+    cy.get('input').should('have.value', '12:30')
     cy.document().then((document) => {
       document.documentElement.lang = 'en-US'
       document.documentElement.dir = 'ltr'

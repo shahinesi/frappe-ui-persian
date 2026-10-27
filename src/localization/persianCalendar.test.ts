@@ -14,6 +14,17 @@ describe('Persian calendar conversion', () => {
     expect(getISODateFromPersianDate(persianDate)).toBe('2025-03-21')
   })
 
+  it('keeps date-only values stable across the Tehran midnight and Nowruz boundary', () => {
+    expect(formatPersianDate('2025-03-20', 'fa-IR')).toBe('1403/12/30')
+    expect(formatPersianDate('2025-03-21', 'fa-IR')).toBe('1404/01/01')
+    expect(parsePersianDate('۱۴۰۳/۱۲/۳۰', 'YYYY/MM/DD', 'fa-IR')).toBe(
+      '2025-03-20',
+    )
+    expect(parsePersianDate('۱۴۰۴/۰۱/۰۱', 'YYYY/MM/DD', 'fa-IR')).toBe(
+      '2025-03-21',
+    )
+  })
+
   it('rejects invalid Gregorian and Persian dates rather than rolling over', () => {
     expect(() => getPersianDateFromISO('2025-02-30')).toThrow(RangeError)
     expect(() =>
@@ -39,7 +50,7 @@ describe('getPersianCalendarMonth', () => {
     const cells = calendar.weeks.flat()
 
     expect(calendar.monthName).toContain('فروردین')
-    expect(calendar.yearLabel).toBe('۱۴۰۴')
+    expect(calendar.yearLabel).toBe('1404')
     expect(calendar.weeks).toHaveLength(6)
     expect(calendar.weeks.every((week) => week.length === 7)).toBe(true)
     expect(calendar.weekdayLabels).toEqual(['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'])
@@ -68,7 +79,7 @@ describe('getPersianCalendarMonth', () => {
       .flat()
       .find((cell) => cell.isoDate === '2025-03-21')
 
-    expect(faNowruz?.dayLabel).toBe('۱')
+    expect(faNowruz?.dayLabel).toBe('1')
     expect(enNowruz?.dayLabel).toBe('1')
     expect(faNowruz?.isoDate).toBe(enNowruz?.isoDate)
   })
@@ -79,7 +90,7 @@ describe('Persian date presentation', () => {
     const iso = '2027-01-01'
 
     expect(getPersianDateFromISO(iso)).toEqual({ year: 1405, month: 10, day: 11 })
-    expect(formatPersianDate(iso, 'fa-IR')).toBe('۱۴۰۵/۱۰/۱۱')
+    expect(formatPersianDate(iso, 'fa-IR')).toBe('1405/10/11')
     expect(formatPersianDate(iso, 'en-US')).toBe('1405/10/11')
     expect(parsePersianDate('۱۴۰۵/۱۰/۱۱')).toBe(iso)
     expect(parsePersianDate('١٤٠٥/١٠/١١')).toBe(iso)

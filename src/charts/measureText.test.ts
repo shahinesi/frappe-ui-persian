@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   CHART_FONT_FAMILY,
   getChartFontFamily,
+  getChartFontFeatureSettings,
   chartFont,
   installTextMeasurer,
   measureTextWidth,
@@ -31,23 +32,29 @@ describe('measureTextWidth', () => {
     const originalLocale = document.documentElement.lang
     document.documentElement.lang = 'fa-IR'
     expect(getChartFontFamily()).toBe('Vazirmatn, InterVar, Inter, sans-serif')
+    expect(getChartFontFeatureSettings()).toBe('"ss01"')
     expect(chartFont(11)).toBe('11px Vazirmatn, InterVar, Inter, sans-serif')
     document.documentElement.lang = 'en-US'
     expect(getChartFontFamily()).toBe(CHART_FONT_FAMILY)
+    expect(getChartFontFeatureSettings()).toBe('normal')
     document.documentElement.lang = originalLocale
   })
 
   it('draws the label in the font the plot renders it in', () => {
     stubLayout()
+    const originalLocale = document.documentElement.lang
+    document.documentElement.lang = 'fa-IR'
     expect(measureTextWidth('Direct', chartFont(11))).toBe(42)
 
     const el = document.body.lastElementChild as HTMLElement
-    expect(chartFont(11)).toBe(`11px ${CHART_FONT_FAMILY}`)
+    expect(chartFont(11)).toBe('11px Vazirmatn, InterVar, Inter, sans-serif')
     expect(el.style.fontSize).toBe('11px')
-    expect(el.style.fontFamily).toBe(CHART_FONT_FAMILY)
+    expect(el.style.fontFamily).toBe('Vazirmatn, InterVar, Inter, sans-serif')
     // Tabular figures are on for the chart's HTML chrome and off in the plot;
     // measuring with them on is what made numeric labels clip.
     expect(el.style.fontVariantNumeric).toBe('normal')
+    expect(el.style.fontFeatureSettings).toBe('"ss01"')
+    document.documentElement.lang = originalLocale
   })
 
   it('answers a repeat from the cache instead of the layout engine', () => {

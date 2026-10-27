@@ -17,12 +17,13 @@ export function formatLabel(name: string) {
 export function formatValue(value: number, precision = 0, shorten = false) {
   if (isNaN(value)) return value.toString()
 
-  let locale = 'en-US'
+  const locale = readDocumentLocale()
 
   if (shorten) {
     let formatted = new Intl.NumberFormat(locale, {
       notation: 'compact',
       maximumFractionDigits: precision,
+      numberingSystem: 'latn',
     }).format(value)
 
     if (locale == 'en-IN') {
@@ -32,10 +33,10 @@ export function formatValue(value: number, precision = 0, shorten = false) {
     return formatted
   } else {
     precision = precision || guessPrecision(value)
-    return new Intl.NumberFormat(locale, {
+    return formatLocaleNumber(value, {
       minimumFractionDigits: precision,
       maximumFractionDigits: precision,
-    }).format(value)
+    })
   }
 }
 
@@ -94,6 +95,7 @@ export function formatDate(date: string, format?: string, grain: TimeGrain = 'da
     const timeOptions: Intl.DateTimeFormatOptions = {
       hour: '2-digit',
       minute: '2-digit',
+      numberingSystem: 'latn',
       ...(grain === 'second' ? { second: '2-digit' } : {}),
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }

@@ -6,6 +6,7 @@
  */
 
 import { dayjs } from '../../utils/dayjs'
+import { digitsArToFa, digitsFaToEn } from '@persian-tools/persian-tools'
 
 const DEFAULT_TIME_FORMAT = 'HH:mm'
 const REFERENCE_DATE = '2000-01-01'
@@ -148,7 +149,7 @@ export function normalize24(raw: string, format = DEFAULT_TIME_FORMAT): string {
 export function formatTime(
   val24: string,
   format = DEFAULT_TIME_FORMAT,
-  locale?: string,
+  _locale?: string,
 ): string {
   if (!val24) return ''
   const canonicalFormat = val24.length === 8 ? 'HH:mm:ss' : 'HH:mm'
@@ -158,19 +159,11 @@ export function formatTime(
     true,
   )
   if (!parsed.isValid()) return val24
-  const formatted = parsed.format(format || DEFAULT_TIME_FORMAT)
-  if (!locale) return formatted
-
-  const numberFormatter = new Intl.NumberFormat(locale, { useGrouping: false })
-  return formatted.replace(/\d/g, (digit) =>
-    numberFormatter.format(Number(digit)),
-  )
+  return parsed.format(format || DEFAULT_TIME_FORMAT)
 }
 
 function normalizeTimeDigits(value: string): string {
-  return value
-    .replace(/[۰-۹]/g, (digit) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)))
-    .replace(/[٠-٩]/g, (digit) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)))
+  return digitsFaToEn(digitsArToFa(value))
 }
 
 /** Total minutes (0–1439) from an `HH:mm[:ss]` string, or null if malformed. */

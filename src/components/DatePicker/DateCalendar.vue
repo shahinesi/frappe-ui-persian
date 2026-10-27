@@ -195,8 +195,7 @@ const yearLabel = computed(() => persianMonthData.value?.yearLabel)
 const resolvedTodayLabel = computed(() => localizedTodayLabel.value)
 const formatYear = computed(() =>
   isPersian.value
-    ? (year: number) =>
-        new Intl.NumberFormat(locale.value, { useGrouping: false }).format(year)
+    ? (year: number) => String(year)
     : undefined,
 )
 

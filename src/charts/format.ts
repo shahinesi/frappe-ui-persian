@@ -312,24 +312,25 @@ function formatPersianTimeAxisTick(
 ): string {
   const parts = getPersianDateFromISO(date.format('YYYY-MM-DD'))
   if (unit === 'year') {
-    return formatLocalizedInteger(parts.year, locale)
+    return formatLocalizedInteger(parts.year)
   }
   if (unit === 'month') {
     return getPersianMonthName(parts.year, parts.month, locale, 'short')
   }
   if (unit === 'day') {
-    return formatLocalizedInteger(parts.day, locale)
+    return formatLocalizedInteger(parts.day)
   }
 
   const timeOptions: Intl.DateTimeFormatOptions = {
     hour: '2-digit',
     minute: '2-digit',
     hourCycle: 'h23',
+    numberingSystem: 'latn',
     ...(unit === 'second' ? { second: '2-digit' } : {}),
   }
   return new Intl.DateTimeFormat(locale, timeOptions).format(date.toDate())
 }
 
-function formatLocalizedInteger(value: number, locale: string): string {
-  return new Intl.NumberFormat(locale, { useGrouping: false }).format(value)
+function formatLocalizedInteger(value: number): string {
+  return String(value)
 }

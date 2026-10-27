@@ -27,6 +27,11 @@ export function getChartFontFamily(locale = documentLocale()): string {
     : CHART_FONT_FAMILY
 }
 
+/** Match the Persian stylistic digit forms the SVG plot inherits from the document. */
+export function getChartFontFeatureSettings(locale = documentLocale()): string {
+  return locale.toLowerCase().startsWith('fa') ? '"ss01"' : 'normal'
+}
+
 /**
  * The CSS font a label of `fontSize` is drawn with. Measuring and rendering
  * have to agree on the string, not just on the size.
@@ -86,6 +91,9 @@ export function measureTextWidth(text: string, font?: string): number | null {
   el.style.font = resolvedFont
   // The `font` shorthand resets `font-variant-numeric`, so it is re-applied.
   el.style.fontVariantNumeric = 'normal'
+  // The font shorthand resets font-feature-settings; reapply the same Persian
+  // digit feature the SVG chart inherits from the document.
+  el.style.fontFeatureSettings = getChartFontFeatureSettings()
   el.textContent = text
   // Ceiled: a reservation computed from this number must never under-read, and
   // echarts rounds fractional widths away at several layout steps.

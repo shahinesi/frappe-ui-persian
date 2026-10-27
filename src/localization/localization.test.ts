@@ -162,9 +162,9 @@ describe('formatLocaleNumber', () => {
   it('formats with the document locale and preserves zero', () => {
     document.documentElement.lang = 'fa-IR'
     expect(formatLocaleNumber(1234.5, { maximumFractionDigits: 1 })).toBe(
-      '۱٬۲۳۴٫۵',
+      '1,234.5',
     )
-    expect(formatLocaleNumber(0)).toBe('۰')
+    expect(formatLocaleNumber(0)).toBe('0')
   })
 
   it('keeps absent values distinct from zero', () => {
@@ -176,12 +176,12 @@ describe('formatLocaleNumber', () => {
 })
 
 describe('formatLocalePercent', () => {
-  it('formats percentage points with Persian digits and percent symbol', () => {
+  it('keeps display digits canonical for Vazirmatn in Persian locales', () => {
     document.documentElement.lang = 'fa-IR'
     expect(formatLocalePercent(12.5, { maximumFractionDigits: 1 })).toBe(
-      '۱۲٫۵٪',
+      '12.5%',
     )
-    expect(formatLocalePercent(0)).toBe('۰٪')
+    expect(formatLocalePercent(0)).toBe('0%')
   })
 
   it('preserves the English percentage convention', () => {
@@ -207,7 +207,7 @@ describe('formatLocaleDate', () => {
         calendar: 'persian',
         dateStyle: 'long',
       }),
-    ).toBe('۳۰ اسفند ۱۴۰۳')
+    ).toBe('30 اسفند 1403')
   })
 
   it('keeps date-only values on the same calendar day', () => {
@@ -231,8 +231,8 @@ describe('formatLocaleDate', () => {
     }
     const beforeMidnight = formatLocaleDate('2026-03-20T20:29:00Z', options)
     const afterMidnight = formatLocaleDate('2026-03-20T20:30:00Z', options)
-    expect(beforeMidnight).toContain('۱۴۰۴/۱۲/۲۹')
-    expect(afterMidnight).toContain('۱۴۰۵/۰۱/۰۱')
+    expect(beforeMidnight).toContain('1404/12/29')
+    expect(afterMidnight).toContain('1405/01/01')
   })
 
   it('returns an empty string for invalid and absent values', () => {
@@ -252,7 +252,19 @@ describe('formatLocaleDateRange', () => {
         month: 'long',
         year: 'numeric',
       }),
-    ).toBe('۹ تا ۱۰ مهر ۱۴۰۵')
+    ).toBe('9 تا 10 مهر 1405')
+  })
+
+  it('does not collapse a Jalali year change inside one Gregorian range year', () => {
+    document.documentElement.lang = 'fa-IR'
+    expect(
+      formatLocaleDateRange('2026-03-20', '2026-03-21', {
+        calendar: 'persian',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }),
+    ).toBe('29 اسفند 1404 تا 1 فروردین 1405')
   })
 
   it('formats ranges in the active English locale', () => {

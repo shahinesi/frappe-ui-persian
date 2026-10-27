@@ -42,7 +42,7 @@ describe('formatTimeAxisLabel locale calendar', () => {
     expect(buildTimeAxis().xAxis.axisLabel.formatter('2026-10-01')).toBe(
       'مهر',
     )
-    expect(formatTimeAxisLabel('2026-10-02', 'day')).toBe('۱۰')
+    expect(formatTimeAxisLabel('2026-10-02', 'day')).toBe('10')
   })
 
   it('keeps the Gregorian English labels in English mode', () => {

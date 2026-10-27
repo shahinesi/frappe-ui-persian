@@ -97,7 +97,7 @@ describe('DateRangePicker', () => {
       },
     })
 
-    cy.get('input').should('have.value', '۱۴۰۵/۱۰/۱۱ تا ۱۴۰۵/۱۰/۱۳').dblclick()
+    cy.get('input').should('have.value', '1405/10/11 تا 1405/10/13').dblclick()
     cy.get('[data-value="2027-01-01"]').should('exist')
     cy.get('[data-value="2027-01-03"]').should('exist')
     cy.get('[title="شنبه"]').should('have.text', 'ش')
@@ -119,7 +119,7 @@ describe('DateRangePicker', () => {
     })
 
     cy.get('input').dblclick()
-    cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'مهر ۱۴۰۵')
+    cy.get('[aria-label=cycle-calendar-view]').should('have.text', 'مهر 1405')
     cy.get('[title="شنبه"]').should('have.text', 'ش')
     cy.get('[title="جمعه"]').should('have.text', 'ج')
     cy.get('[data-value="2026-10-01"]').click()
@@ -139,7 +139,7 @@ describe('DateRangePicker', () => {
       props: { modelValue: ['2026-10-01', '2026-10-02'] },
     })
     cy.get('input').dblclick()
-    cy.get('[aria-label="cycle-calendar-view"]').first().should('have.text', 'مهر ۱۴۰۵')
+    cy.get('[aria-label="cycle-calendar-view"]').first().should('have.text', 'مهر 1405')
     cy.get('[title="شنبه"]').first().should('have.text', 'ش')
   })
 
@@ -194,7 +194,7 @@ describe('DateRangePicker', () => {
     }).then(({ wrapper }) => {
       cy.get('[aria-label=cycle-calendar-view]').should(
         'have.text',
-        'مهر ۱۴۰۵',
+        'مهر 1405',
       )
       cy.get('[title="شنبه"]').should('have.text', 'ش')
       cy.get('[data-value="2026-10-01"]').should(
@@ -229,7 +229,7 @@ describe('DateRangePicker', () => {
 
       cy.get('[aria-label=cycle-calendar-view]').should(
         'have.text',
-        'مهر ۱۴۰۵',
+        'مهر 1405',
       )
       cy.get('[title="شنبه"]').should('have.text', 'ش')
       cy.get('[data-value="2026-10-02"]').should(
@@ -259,7 +259,7 @@ describe('DateRangePicker', () => {
 
       cy.get('[aria-label="cycle-calendar-view"]')
         .first()
-        .should('have.text', 'مهر ۱۴۰۵')
+        .should('have.text', 'مهر 1405')
       cy.get('[title="شنبه"]').first().should('have.text', 'ش')
       cy.get('[data-value="2026-10-01"]').should(
         'have.attr',
@@ -291,7 +291,7 @@ describe('DateRangePicker', () => {
       })
       cy.get('[aria-label="cycle-calendar-view"]')
         .first()
-        .should('have.text', 'مهر ۱۴۰۵')
+        .should('have.text', 'مهر 1405')
       cy.get('[title="شنبه"]').first().should('have.text', 'ش')
       cy.get('[data-value="2026-10-02"]').should(
         'have.attr',

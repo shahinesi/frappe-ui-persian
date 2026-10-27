@@ -124,7 +124,7 @@
   },
   {
     name: 'calendar',
-    description: 'Calendar system for presentation. Labels and digits follow the document locale. Defaults to Persian for `fa` locales and Gregorian otherwise.',
+    description: 'Calendar system for presentation. Month and weekday labels follow the document locale; numeric text stays canonical for the active font. Defaults to Persian for `fa` locales and Gregorian otherwise.',
     required: false,
     type: 'CalendarPreference',
     default: '"auto"'
@@ -346,7 +346,7 @@
   },
   {
     name: 'calendar',
-    description: 'Calendar system for presentation. Labels and digits follow the document locale. Defaults to Persian for `fa` locales and Gregorian otherwise.',
+    description: 'Calendar system for presentation. Month and weekday labels follow the document locale; numeric text stays canonical for the active font. Defaults to Persian for `fa` locales and Gregorian otherwise.',
     required: false,
     type: 'CalendarPreference',
     default: '"auto"'
@@ -575,7 +575,7 @@
   },
   {
     name: 'calendar',
-    description: 'Calendar system for presentation. Labels and digits follow the document locale. Defaults to Persian for `fa` locales and Gregorian otherwise.',
+    description: 'Calendar system for presentation. Month and weekday labels follow the document locale; numeric text stays canonical for the active font. Defaults to Persian for `fa` locales and Gregorian otherwise.',
     required: false,
     type: 'CalendarPreference',
     default: '"auto"'

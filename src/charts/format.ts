@@ -1,5 +1,6 @@
 import { dayjs } from '#utils/dayjs'
 import {
+  formatLocaleDate,
   formatLocaleNumber,
   formatLocalePercent,
 } from '../localization/localization'
@@ -166,7 +167,57 @@ export function formatDate(
   if (date === null || date === undefined || date === '') return ''
   const parsed = dayjs(date)
   if (!parsed.isValid()) return String(date)
-  return parsed.format(format || GRAIN_FORMATS[grain] || GRAIN_FORMATS.day)
+  const dateFormat = format || GRAIN_FORMATS[grain] || GRAIN_FORMATS.day
+  const locale = readDocumentLocale()
+
+  if (/^fa(?:-|$)/i.test(locale)) {
+    // Quarter grain is a Gregorian reporting period. Keep its label explicit
+    // so a Gregorian quarter is not presented as a Jalali quarter.
+    if (grain === 'quarter' || /Q/.test(dateFormat.replace(/\[[^\]]*\]/g, ''))) {
+      return `فصل ${Math.floor(parsed.month() / 3) + 1} ${parsed.year()}`
+    }
+
+    const tokens = dateFormat.replace(/\[[^\]]*\]/g, '')
+    const dateOptions: Intl.DateTimeFormatOptions = {
+      calendar: 'persian',
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      ...(tokens.includes('YYYY')
+        ? { year: 'numeric' as const }
+        : tokens.includes('YY')
+          ? { year: '2-digit' as const }
+          : {}),
+      ...(tokens.includes('MMMM')
+        ? { month: 'long' as const }
+        : tokens.includes('MMM')
+          ? { month: 'short' as const }
+          : tokens.includes('MM')
+            ? { month: '2-digit' as const }
+            : tokens.includes('M')
+              ? { month: 'numeric' as const }
+              : {}),
+      ...(tokens.includes('DD')
+        ? { day: '2-digit' as const }
+        : tokens.includes('D')
+          ? { day: 'numeric' as const }
+          : {}),
+      ...(tokens.includes('HH') || tokens.includes('hh')
+        ? { hour: '2-digit' as const }
+        : tokens.includes('H') || tokens.includes('h')
+          ? { hour: 'numeric' as const }
+          : {}),
+      ...(tokens.includes('mm') ? { minute: '2-digit' as const } : {}),
+      ...(tokens.includes('ss') ? { second: '2-digit' as const } : {}),
+      ...(tokens.includes('A') || tokens.includes('a')
+        ? { hourCycle: 'h12' as const }
+        : tokens.includes('H')
+          ? { hourCycle: 'h23' as const }
+          : {}),
+    }
+    const label = formatLocaleDate(parsed.toDate(), dateOptions)
+    return dateFormat.includes('[Week of]') ? `هفتهٔ ${label}` : label
+  }
+
+  return parsed.format(dateFormat)
 }
 
 /**

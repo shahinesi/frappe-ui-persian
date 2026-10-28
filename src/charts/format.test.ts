@@ -152,6 +152,7 @@ describe('formatDate', () => {
   })
 
   it('formats Persian chart tooltip dates with the shared Jalali formatter', () => {
+    vi.stubEnv('TZ', 'Asia/Tehran')
     vi.stubGlobal('document', { documentElement: { lang: 'fa-IR' } })
     try {
       expect(formatDate('2023-04-05', 'day')).toBe('16 فرو 1402')
@@ -169,6 +170,7 @@ describe('formatDate', () => {
       expect(formatDate('2023-04-05', 'quarter')).toBe('فصل 2 2023')
     } finally {
       vi.unstubAllGlobals()
+      vi.unstubAllEnvs()
     }
   })
 

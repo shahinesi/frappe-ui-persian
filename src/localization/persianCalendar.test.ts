@@ -83,6 +83,12 @@ describe('getPersianCalendarMonth', () => {
     expect(enNowruz?.dayLabel).toBe('1')
     expect(faNowruz?.isoDate).toBe(enNowruz?.isoDate)
   })
+
+  it('uses Persian calendar labels for legacy underscore locales', () => {
+    const calendar = getPersianCalendarMonth(1404, 1, 'fa_IR')
+    expect(calendar.monthName).toContain('فروردین')
+    expect(calendar.weekdayLabels).toEqual(['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'])
+  })
 })
 
 describe('Persian date presentation', () => {

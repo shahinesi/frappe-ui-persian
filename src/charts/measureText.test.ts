@@ -34,6 +34,9 @@ describe('measureTextWidth', () => {
     expect(getChartFontFamily()).toBe('Vazirmatn, InterVar, Inter, sans-serif')
     expect(getChartFontFeatureSettings()).toBe('"ss01"')
     expect(chartFont(11)).toBe('11px Vazirmatn, InterVar, Inter, sans-serif')
+    document.documentElement.lang = 'fa_IR'
+    expect(getChartFontFamily()).toBe('Vazirmatn, InterVar, Inter, sans-serif')
+    expect(getChartFontFeatureSettings()).toBe('"ss01"')
     document.documentElement.lang = 'en-US'
     expect(getChartFontFamily()).toBe(CHART_FONT_FAMILY)
     expect(getChartFontFeatureSettings()).toBe('normal')

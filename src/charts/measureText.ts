@@ -1,4 +1,5 @@
 import { documentLocale } from '../utils/documentAttributes'
+import { isPersianLocale } from '../localization/locale'
 
 /**
  * Text measured by the thing that draws it.
@@ -22,14 +23,14 @@ export const CHART_FONT_FAMILY = 'InterVar, Inter, sans-serif'
 
 /** Use the bundled Persian font for chart labels when the UI language is fa. */
 export function getChartFontFamily(locale = documentLocale()): string {
-  return locale.toLowerCase().startsWith('fa')
+  return isPersianLocale(locale)
     ? 'Vazirmatn, InterVar, Inter, sans-serif'
     : CHART_FONT_FAMILY
 }
 
 /** Match the Persian stylistic digit forms the SVG plot inherits from the document. */
 export function getChartFontFeatureSettings(locale = documentLocale()): string {
-  return locale.toLowerCase().startsWith('fa') ? '"ss01"' : 'normal'
+  return isPersianLocale(locale) ? '"ss01"' : 'normal'
 }
 
 /**

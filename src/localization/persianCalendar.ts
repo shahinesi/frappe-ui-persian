@@ -1,6 +1,7 @@
 import { readDocumentLocale } from '../utils/readDocumentLocale'
 import { digitsArToFa, digitsFaToEn } from '@persian-tools/persian-tools'
 import { isValidJalaaliDate, jalaaliWeek, toGregorian, toJalaali } from 'jalaali-js'
+import { isPersianLocale, toIntlLocale } from './locale'
 
 /** A Persian calendar date; month is one-based (Farvardin = 1). */
 export interface PersianCalendarDate {
@@ -109,7 +110,7 @@ export function getPersianMonthName(
     throw new RangeError('Persian year/month is outside the supported range')
   }
   const [persianName, englishName] = PERSIAN_MONTH_NAMES[month - 1]
-  const name = /^fa(?:-|$)/i.test(locale) ? persianName : englishName
+	const name = isPersianLocale(locale) ? persianName : englishName
   return style === 'short' ? name.slice(0, 3) : name
 }
 
@@ -220,7 +221,7 @@ export function getPersianCalendarMonth(
     gridStartGregorian.gm - 1,
     gridStartGregorian.gd,
   ))
-  const weekdayFormatter = new Intl.DateTimeFormat(locale, {
+	const weekdayFormatter = new Intl.DateTimeFormat(toIntlLocale(locale), {
     weekday: 'long',
     timeZone: 'UTC',
   })
@@ -229,7 +230,7 @@ export function getPersianCalendarMonth(
     // 2025-03-22 is a Saturday; indexing from it makes Saturday stable at 0.
     return weekdayFormatter.format(new Date(Date.UTC(2025, 2, 22 + index)))
   })
-  const weekdayLabels = locale.toLowerCase().startsWith('fa')
+	const weekdayLabels = isPersianLocale(locale)
     ? ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج']
     : weekdayAriaLabels
   const cells = Array.from({ length: 42 }, (_, index) => {

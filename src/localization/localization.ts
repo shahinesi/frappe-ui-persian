@@ -12,7 +12,7 @@ import {
   documentLocale,
 } from '#utils/documentAttributes'
 import { toJalaali } from 'jalaali-js'
-import { isPersianLocale } from './calendar'
+import { isPersianLocale, toIntlLocale } from './locale'
 import { getPersianMonthName } from './persianCalendar'
 export { resolveCalendar } from './calendar'
 export type { CalendarPreference, ResolvedCalendar } from './calendar'
@@ -108,7 +108,7 @@ export function formatLocaleNumber(
   options: Intl.NumberFormatOptions = {},
 ): string {
   if (value === null || value === undefined || Number.isNaN(value)) return ''
-  return new Intl.NumberFormat(documentLocale(), {
+  return new Intl.NumberFormat(toIntlLocale(documentLocale()), {
     ...options,
     numberingSystem: 'latn',
   }).format(value)
@@ -124,7 +124,7 @@ export function formatLocalePercent(
   options: Intl.NumberFormatOptions = {},
 ): string {
   if (value === null || value === undefined || Number.isNaN(value)) return ''
-  return new Intl.NumberFormat(documentLocale(), {
+  return new Intl.NumberFormat(toIntlLocale(documentLocale()), {
     ...options,
     style: 'percent',
     numberingSystem: 'latn',
@@ -164,7 +164,7 @@ export function formatLocaleDate(
 
   const locale = documentLocale()
   const usePersianCalendar = shouldUsePersianCalendar(options.calendar, locale)
-  const formatter = new Intl.DateTimeFormat(locale, {
+  const formatter = new Intl.DateTimeFormat(toIntlLocale(locale), {
     ...formatOptions,
     ...(usePersianCalendar ? { calendar: 'gregory' } : {}),
     numberingSystem: 'latn',
@@ -227,7 +227,7 @@ export function formatLocaleDateRange(
 
   const locale = documentLocale()
   const usePersianCalendar = shouldUsePersianCalendar(options.calendar, locale)
-  const formatter = new Intl.DateTimeFormat(locale, {
+  const formatter = new Intl.DateTimeFormat(toIntlLocale(locale), {
     ...formatOptions,
     ...(usePersianCalendar ? { calendar: 'gregory' } : {}),
     numberingSystem: 'latn',

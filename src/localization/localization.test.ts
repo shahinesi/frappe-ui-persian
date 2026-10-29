@@ -29,6 +29,9 @@ describe('useDocumentLocale', () => {
     await new Promise((resolve) => setTimeout(resolve, 0))
     expect(state.locale.value).toBe('fa-IR')
     expect(state.direction.value).toBe('rtl')
+    document.documentElement.lang = 'fa_IR'
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(state.locale.value).toBe('fa-IR')
   })
 
   it('reacts when the document language and direction change', async () => {
@@ -146,6 +149,7 @@ describe('resolveCalendar', () => {
   it('defaults Persian locales to the Persian calendar and others to Gregorian', () => {
     expect(resolveCalendar('auto', 'fa')).toBe('persian')
     expect(resolveCalendar(undefined, 'fa-IR')).toBe('persian')
+    expect(resolveCalendar('auto', 'fa_IR')).toBe('persian')
     expect(resolveCalendar('auto', 'fa-AF')).toBe('persian')
     expect(resolveCalendar('auto', 'en-US')).toBe('gregorian')
     expect(resolveCalendar('auto', 'fr-FR')).toBe('gregorian')
@@ -165,6 +169,12 @@ describe('formatLocaleNumber', () => {
       '1,234.5',
     )
     expect(formatLocaleNumber(0)).toBe('0')
+  })
+
+  it('accepts legacy underscore locale tags in Intl-backed formatters', () => {
+    document.documentElement.lang = 'fa_IR'
+    expect(formatLocaleNumber(1234.5, { maximumFractionDigits: 1 })).toBe('1,234.5')
+    expect(formatLocaleDate('2025-03-20', { dateStyle: 'long' })).toBe('30 اسفند 1403')
   })
 
   it('keeps absent values distinct from zero', () => {

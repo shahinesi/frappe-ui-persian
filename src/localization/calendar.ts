@@ -1,15 +1,12 @@
 import { readDocumentLocale } from '../utils/readDocumentLocale'
+import { isPersianLocale } from './locale'
 
 export * from './persianCalendar'
+export { isPersianLocale, toIntlLocale } from './locale'
 
 /** Calendar selection for date controls. `auto` follows the document locale. */
 export type CalendarPreference = 'auto' | 'gregorian' | 'persian'
 export type ResolvedCalendar = Exclude<CalendarPreference, 'auto'>
-
-/** Match the Persian language subtag regardless of BCP 47 casing. */
-export function isPersianLocale(locale: string): boolean {
-  return /^fa(?:-|$)/i.test(locale)
-}
 
 /** Resolve the display calendar without changing canonical Gregorian values. */
 export function resolveCalendar(

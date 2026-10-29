@@ -14,6 +14,12 @@ describe('Persian DateTimePicker formats', () => {
 		).toBe('مهر 9, 1405 at 12:30 ب.ظ.')
 	})
 
+	it('formats legacy underscore locales without Intl locale errors', () => {
+		expect(formatPersianDateTime('2026-10-01', '12:30:00', 'fa_IR', format)).toBe(
+			'مهر 9, 1405 at 12:30 ب.ظ.',
+		)
+	})
+
 	it('parses a custom Persian month/date format and Persian numeral input to Gregorian', () => {
 		const parsed = parsePersianDateTimeInput(
 			'مهر ۱۰, ۱۴۰۵ at ۱۲:۳۱ ب.ظ.',

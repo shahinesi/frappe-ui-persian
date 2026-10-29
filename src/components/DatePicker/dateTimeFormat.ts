@@ -2,6 +2,7 @@ import { digitsArToFa, digitsFaToEn } from '@persian-tools/persian-tools'
 import type { Dayjs } from 'dayjs/esm'
 import { dayjs } from '../../utils/dayjs'
 import { formatPersianDate, parsePersianDate } from '../../localization/persianCalendar'
+import { isPersianLocale, toIntlLocale } from '../../localization/locale'
 
 const DATE_FORMAT = 'YYYY-MM-DD'
 const DATE_TIME_FORMAT = `${DATE_FORMAT} HH:mm:ss`
@@ -26,14 +27,14 @@ export function formatPersianDateTime(
 				return formatPersianDate(isoDate, locale, token === 'Do' ? 'D' : token)
 			}
 			if (['dddd', 'ddd', 'dd'].includes(token)) {
-				return new Intl.DateTimeFormat(locale, {
+				return new Intl.DateTimeFormat(toIntlLocale(locale), {
 					weekday: token === 'dddd' ? 'long' : 'short',
 					timeZone: 'UTC',
 				}).format(weekdayDate)
 			}
 			if (token === 'd') return String(weekdayDate.getUTCDay())
 			if (timeTokens.includes(token)) {
-				if (['A', 'a'].includes(token) && /^fa(?:-|$)/i.test(locale)) {
+				if (['A', 'a'].includes(token) && isPersianLocale(locale)) {
 					return dateTime.hour() < 12 ? 'ق.ظ.' : 'ب.ظ.'
 				}
 				return dateTime.format(token)

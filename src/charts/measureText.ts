@@ -1,3 +1,6 @@
+import { documentLocale } from '../utils/documentAttributes'
+import { isPersianLocale } from '../localization/locale'
+
 /**
  * Text measured by the thing that draws it.
  *
@@ -18,12 +21,24 @@ const DEFAULT_FONT = '12px sans-serif'
 /** What the charts set as `textStyle.fontFamily`; every label inherits it. */
 export const CHART_FONT_FAMILY = 'InterVar, Inter, sans-serif'
 
+/** Use the bundled Persian font for chart labels when the UI language is fa. */
+export function getChartFontFamily(locale = documentLocale()): string {
+  return isPersianLocale(locale)
+    ? 'Vazirmatn, InterVar, Inter, sans-serif'
+    : CHART_FONT_FAMILY
+}
+
+/** Match the Persian stylistic digit forms the SVG plot inherits from the document. */
+export function getChartFontFeatureSettings(locale = documentLocale()): string {
+  return isPersianLocale(locale) ? '"ss01"' : 'normal'
+}
+
 /**
  * The CSS font a label of `fontSize` is drawn with. Measuring and rendering
  * have to agree on the string, not just on the size.
  */
 export function chartFont(fontSize: number): string {
-  return `${fontSize}px ${CHART_FONT_FAMILY}`
+  return `${fontSize}px ${getChartFontFamily()}`
 }
 
 /**
@@ -77,6 +92,9 @@ export function measureTextWidth(text: string, font?: string): number | null {
   el.style.font = resolvedFont
   // The `font` shorthand resets `font-variant-numeric`, so it is re-applied.
   el.style.fontVariantNumeric = 'normal'
+  // The font shorthand resets font-feature-settings; reapply the same Persian
+  // digit feature the SVG chart inherits from the document.
+  el.style.fontFeatureSettings = getChartFontFeatureSettings()
   el.textContent = text
   // Ceiled: a reservation computed from this number must never under-read, and
   // echarts rounds fractional widths away at several layout steps.

@@ -22,6 +22,13 @@ const clearSlot = {
 }
 
 describe('DateTimePicker', () => {
+  afterEach(() => {
+    cy.document().then((document) => {
+      document.documentElement.lang = ''
+      document.documentElement.dir = ''
+    })
+  })
+
   it('renders', () => {
     cy.mount(DateTimePicker)
 
@@ -37,6 +44,278 @@ describe('DateTimePicker', () => {
     cy.mount(DateTimePicker)
     cy.get('input').first().dblclick()
     cy.get('[aria-label=cycle-calendar-view]').should('exist')
+  })
+
+  it('uses the Persian calendar automatically in a Persian locale while keeping date-time values ISO', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DateTimePicker, {
+      props: {
+        modelValue: '2026-10-01 12:30:00',
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+    cy.get('input').first().dblclick()
+    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'مهر 1405')
+    cy.get('[data-value="2026-10-02"]').click()
+    cy.get('@updateModel').should('have.been.calledWith', '2026-10-02 12:30:00')
+  })
+
+  it('uses the Gregorian calendar automatically in an English locale', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'en-US'
+      document.documentElement.dir = 'ltr'
+    })
+    cy.mount(DateTimePicker, {
+      props: { modelValue: '2026-10-01 12:30:00' },
+    })
+    cy.get('input').first().dblclick()
+    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'Oct 2026')
+    cy.get('[data-value="2026-10-01"]').should(
+      'have.attr',
+      'aria-selected',
+      'true',
+    )
+  })
+
+  it('formats and parses Persian date-time input while keeping the model Gregorian', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DateTimePicker, {
+      props: {
+        modelValue: '2026-10-01 12:30:00',
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+
+    cy.get('input')
+      .first()
+      .should('have.value', '1405/07/09 12:30:00')
+      .clear()
+      .type('۱۴۰۵/۰۷/۱۰ ۱۲:۳۱:۰۵')
+      .blur()
+
+    cy.get('@updateModel').should(
+      'have.been.calledWith',
+      '2026-10-02 12:31:05',
+    )
+    cy.get('input').first().should('have.value', '1405/07/10 12:31:05')
+  })
+
+  it('rejects invalid Jalali input instead of falling back to a Gregorian parse', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DateTimePicker, {
+      props: {
+        modelValue: '2026-10-01 12:30:00',
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+
+    cy.get('input')
+      .first()
+      .clear()
+      .type('۱۴۰۴/۱۲/۳۰ ۱۲:۳۱:۰۵')
+      .blur()
+
+    cy.get('@updateModel').should('not.have.been.called')
+    cy.get('input').first().should('have.value', '1405/07/09 12:30:00')
+  })
+
+  it('accepts canonical Gregorian ISO input in a Persian locale', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DateTimePicker, {
+      props: {
+        modelValue: '2026-10-01 12:30:00',
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+
+    cy.get('input')
+      .first()
+      .clear()
+      .type('2026-10-02 12:31:05')
+      .blur()
+
+    cy.get('@updateModel').should(
+      'have.been.calledWith',
+      '2026-10-02 12:31:05',
+    )
+    cy.get('input').first().should('have.value', '1405/07/10 12:31:05')
+  })
+
+  it('formats and parses a custom format with Persian calendar fields', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DateTimePicker, {
+      props: {
+        modelValue: '2026-10-01 12:30:00',
+        format: 'MMMM D, YYYY [at] h:mm A',
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+
+    cy.get('input')
+      .first()
+      .should('have.value', 'مهر 9, 1405 at 12:30 ب.ظ.')
+      .clear()
+      .type('مهر ۱۰, ۱۴۰۵ at ۱۲:۳۱ ب.ظ.')
+      .blur()
+
+    cy.get('@updateModel').should(
+      'have.been.calledWith',
+      '2026-10-02 12:31:00',
+    )
+    cy.get('input').first().should('have.value', 'مهر 10, 1405 at 12:31 ب.ظ.')
+  })
+
+  it('reactively localizes the DateTimePicker trigger without changing its ISO model', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DateTimePicker, {
+      props: {
+        modelValue: '2026-10-01 12:30:00',
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+
+    cy.get('input').first().should('have.value', '1405/07/09 12:30:00')
+    cy.document().then((document) => {
+      document.documentElement.lang = 'en-US'
+      document.documentElement.dir = 'ltr'
+    })
+    cy.get('input').first().should('have.value', '2026-10-01 12:30:00')
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    cy.get('input').first().should('have.value', '1405/07/09 12:30:00')
+    cy.get('@updateModel').should('not.have.been.called')
+  })
+
+  it('supports an explicit Gregorian calendar in a Persian locale', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    cy.mount(DateTimePicker, {
+      props: { calendar: 'gregorian', modelValue: '2026-10-01 12:30:00' },
+    })
+    cy.get('input').first().should('have.value', '2026-10-01 12:30:00')
+    cy.get('input').first().dblclick()
+    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'Oct 2026')
+  })
+
+  it('supports an explicit Persian calendar in an English locale', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'en-US'
+      document.documentElement.dir = 'ltr'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DateTimePicker, {
+      props: {
+        calendar: 'persian',
+        modelValue: '2026-10-01 12:30:00',
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+    cy.get('input').first().should('have.value', '1405/07/09 12:30:00')
+    cy.get('input').first().dblclick()
+    // The explicit prop selects the calendar system; labels and digits remain
+    // localized to the active English document locale.
+    cy.get('[aria-label="cycle-calendar-view"]').should('have.text', 'Mehr 1405')
+    cy.document().its('documentElement.lang').should('equal', 'en-US')
+    cy.get('[data-value="2026-10-01"]').should(
+      'have.attr',
+      'aria-selected',
+      'true',
+    )
+    cy.get('[data-value="2026-10-02"]').click()
+    cy.get('@updateModel').should(
+      'have.been.calledWith',
+      '2026-10-02 12:30:00',
+    )
+  })
+
+  it('updates the automatic calendar when the document language changes', () => {
+    cy.clock(Date.UTC(2026, 9, 15, 12))
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    const onUpdate = cy.stub().as('updateModel')
+    cy.mount(DateTimePicker, {
+      props: {
+        modelValue: '2026-10-01 12:30:00',
+        open: true,
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+
+    cy.get('[aria-label="cycle-calendar-view"]').should(
+      'have.text',
+      'مهر 1405',
+    )
+    cy.get('[title="شنبه"]').should('have.text', 'ش')
+    cy.get('[data-value="2026-10-01"]').should(
+      'have.attr',
+      'aria-selected',
+      'true',
+    )
+
+    cy.document().then((document) => {
+      document.documentElement.lang = 'en-US'
+      document.documentElement.dir = 'ltr'
+    })
+    cy.get('[aria-label="cycle-calendar-view"]').should(
+      'have.text',
+      'Oct 2026',
+    )
+    cy.get('[role=grid] > div')
+      .first()
+      .find('div')
+      .first()
+      .should('have.text', 'S')
+    cy.get('[data-value="2026-10-01"]').should(
+      'have.attr',
+      'aria-selected',
+      'true',
+    )
+
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    cy.get('[aria-label="cycle-calendar-view"]').should(
+      'have.text',
+      'مهر 1405',
+    )
+    cy.get('[title="شنبه"]').should('have.text', 'ش')
+    cy.get('[data-value="2026-10-01"]').should(
+      'have.attr',
+      'aria-selected',
+      'true',
+    )
+    cy.get('@updateModel').should('not.have.been.called')
   })
 
   it('Now button selects current date and time, and closes', () => {

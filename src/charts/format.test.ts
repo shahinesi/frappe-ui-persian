@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { chartFont, measureTextWidth } from './measureText'
 import {
   estimateTextWidth,
@@ -150,6 +150,37 @@ describe('formatDate', () => {
     expect(formatDate('not-a-date')).toBe('not-a-date')
     expect(formatDate('')).toBe('')
   })
+
+  it('formats Persian chart tooltip dates with the shared Jalali formatter', () => {
+    vi.stubEnv('TZ', 'Asia/Tehran')
+    vi.stubGlobal('document', { documentElement: { lang: 'fa-IR' } })
+    try {
+      expect(formatDate('2023-04-05', 'day')).toBe('16 فرو 1402')
+      expect(formatDate('2023-04-05', 'month')).toBe('فرو 1402')
+      expect(formatDate('2023-04-05', 'year')).toBe('1402')
+      expect(formatAxisValue('2023-04-05', 'time', 'day')).toBe('16 فرو 1402')
+      expect(formatDate('2023-04-04T20:30:00.000Z', 'day')).toBe('16 فرو 1402')
+      expect(
+        formatDate('2023-04-04T20:30:00.000Z', 'minute', 'YYYY-MM-DD HH:mm'),
+      ).toBe('1402-01-16 00:00')
+      expect(formatDate('2023-04-04T20:29:59.000Z', 'day')).toBe('15 فرو 1402')
+      expect(formatDate('2023-04-04T20:30:00.000Z', 'day')).toBe('16 فرو 1402')
+      expect(formatDate('2023-04-05', 'quarter')).toBe('فصل 2 2023')
+    } finally {
+      vi.unstubAllGlobals()
+      vi.unstubAllEnvs()
+    }
+  })
+
+  it('keeps Gregorian dates and quarter labels in English', () => {
+    vi.stubGlobal('document', { documentElement: { lang: 'en-US' } })
+    try {
+      expect(formatDate('2023-04-05', 'day')).toBe('Apr 5, 2023')
+      expect(formatDate('2023-04-05', 'quarter')).toBe('Q2 2023')
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
 })
 
 describe('formatPercent', () => {
@@ -159,6 +190,23 @@ describe('formatPercent', () => {
     expect(formatPercent(12.4)).toBe('12%')
     expect(formatPercent(12.6)).toBe('13%')
     expect(formatPercent(100)).toBe('100%')
+  })
+
+  it('localizes chart percentages without changing English output', () => {
+    vi.stubGlobal('MutationObserver', undefined)
+    try {
+      vi.stubGlobal('document', { documentElement: { lang: 'fa-IR' } })
+      expect(formatPercent(0)).toBe('0%')
+      expect(formatPercent(0.4)).toBe('<1%')
+      expect(formatPercent(12.6)).toBe('13%')
+
+      vi.stubGlobal('document', { documentElement: { lang: 'en-US' } })
+      expect(formatPercent(0)).toBe('0%')
+      expect(formatPercent(0.4)).toBe('<1%')
+      expect(formatPercent(12.6)).toBe('13%')
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 })
 

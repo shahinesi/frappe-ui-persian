@@ -1,5 +1,9 @@
 <template>
-  <DropdownMenuRoot v-model:open="openModel" v-slot="{ open }">
+  <DropdownMenuRoot
+    v-model:open="openModel"
+    :dir="textDirection"
+    v-slot="{ open }"
+  >
     <DropdownMenuTrigger
       as-child
       data-slot="trigger"
@@ -28,6 +32,7 @@
       <DropdownMenuContent
         data-slot="content"
         data-motion="instant"
+        :dir="textDirection"
         :class="menuClasses.content"
         :side="side"
         :align="align"
@@ -69,6 +74,7 @@ import type { DropdownProps, DropdownSlots } from './types'
 import { menuClasses, normalizeMenuOptions, warnRemoved } from '../Menu/utils'
 import { usePortalTarget } from '../../composables/usePortalTarget'
 import { useReactiveSlots } from '../../composables/useReactiveSlots'
+import { useDocumentLocale } from '../../localization'
 
 defineOptions({
   inheritAttrs: false,
@@ -86,6 +92,7 @@ const props = withDefaults(defineProps<DropdownProps>(), {
 })
 
 const portalTarget = usePortalTarget(() => props.portalTo)
+const { direction: textDirection } = useDocumentLocale()
 
 function close() {
   openModel.value = false

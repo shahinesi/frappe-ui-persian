@@ -16,7 +16,7 @@
     :required="props.required"
     :size="props.size"
     :variant="props.variant"
-    :placeholder="props.placeholder"
+    :placeholder="localizedPlaceholder"
     :disabled="props.disabled"
     :readonly="inputReadonly"
     :display-label="displayLabel"
@@ -46,7 +46,7 @@
         <aside
           v-if="$slots.actions"
           data-slot="actions"
-          aria-label="Shortcuts"
+          :aria-label="localizedShortcuts"
           class="flex flex-col p-2 gap-0.5"
         >
           <slot
@@ -67,7 +67,8 @@
           <DateCalendar
             ref="calendarRef"
             :model-value="selectedDate"
-            today-label="Now"
+            :calendar="props.calendar"
+            :today-label="localizedNow"
             :min="resolvedMin"
             :max="resolvedMax"
             :is-date-unavailable="props.isDateUnavailable"
@@ -81,7 +82,7 @@
               :typeable="props.typeable"
               side="bottom"
               align="start"
-              placeholder="Select time"
+              :placeholder="localizedTimePlaceholder"
               :min="computedMinTime"
               :max="computedMaxTime"
               @change="onTimeChange"
@@ -97,6 +98,13 @@
 import { ref, computed, nextTick, watch } from 'vue'
 import TimePicker from '../TimePicker/TimePicker.vue'
 import { dayjs, dayjsLocal, dayjsSystem } from '../../utils/dayjs'
+import { resolveCalendar } from '../../localization/calendar'
+import { useDocumentLocale, useLocalizedText } from '../../localization/localization'
+import {
+  formatPersianDateTime,
+  parseCanonicalDateTimeInput,
+  parsePersianDateTimeInput,
+} from './dateTimeFormat'
 import DateCalendar from './DateCalendar.vue'
 import PickerShell from '../shared/picker/PickerShell.vue'
 import {
@@ -126,8 +134,13 @@ const props = withDefaults(defineProps<DateTimePickerProps>(), {
   clearable: true,
   openOnFocus: false,
   openOnClick: true,
+  calendar: 'auto',
 })
 const emit = defineEmits<DateTimePickerEmits>()
+const localizedPlaceholder = useLocalizedText(() => props.placeholder)
+const localizedNow = useLocalizedText('Now')
+const localizedTimePlaceholder = useLocalizedText('Select time')
+const localizedShortcuts = useLocalizedText('Shortcuts')
 
 defineSlots<DateTimePickerSlots>()
 
@@ -193,6 +206,10 @@ const inputReadonly = useTypeable(props)
 
 const DATE_FORMAT = 'YYYY-MM-DD'
 const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
+const { locale } = useDocumentLocale()
+const isPersianCalendar = computed(
+  () => resolveCalendar(props.calendar, locale.value) === 'persian',
+)
 
 const selectedDate = ref<string>('')
 const timeValue = ref<string>('')
@@ -272,6 +289,14 @@ const combinedValue = computed<string>(() => {
 
 const displayLabel = computed<string>(() => {
   if (!combinedValue.value) return ''
+  if (isPersianCalendar.value) {
+    return formatPersianDateTime(
+      selectedDate.value,
+      timeValue.value || '00:00:00',
+      locale.value,
+      props.format || 'YYYY/MM/DD HH:mm:ss',
+    )
+  }
   if (props.format) return dayjs(combinedValue.value).format(props.format)
   return combinedValue.value
 })
@@ -320,7 +345,15 @@ function commitInput(close = false): void {
     if (close && !shouldKeepOpen.value) isOpen.value = false
     return
   }
-  const parsed = coerceToDayjs(raw)
+  const parsed =
+    isPersianCalendar.value
+      ? parsePersianDateTimeInput(
+          raw,
+          locale.value,
+          props.format || 'YYYY/MM/DD HH:mm:ss',
+        ) ??
+        parseCanonicalDateTimeInput(raw)
+      : coerceToDayjs(raw)
   if (parsed && !checkUnavailable(parsed)) {
     selectDate(parsed)
     timeValue.value = parsed.format('HH:mm:ss')

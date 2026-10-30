@@ -22,22 +22,30 @@ export function getCommonSiteConfig() {
   return null
 }
 
-export function findBenchPath() {
-  let currentDir = path.resolve('.')
-  while (currentDir !== '/') {
+export function* directoryParents(startDir, pathApi = path) {
+  let currentDir = pathApi.resolve(startDir)
+  while (true) {
+    yield currentDir
+    const parentDir = pathApi.dirname(currentDir)
+    if (parentDir === currentDir) return
+    currentDir = parentDir
+  }
+}
+
+export function findBenchPath(startDir = process.cwd()) {
+  for (const currentDir of directoryParents(startDir)) {
     if (
       fs.existsSync(path.join(currentDir, 'sites')) &&
       fs.existsSync(path.join(currentDir, 'apps'))
     ) {
       return currentDir
     }
-    currentDir = path.resolve(currentDir, '..')
   }
   return null
 }
 
-export function findAppsFolder() {
-  const benchPath = findBenchPath()
+export function findAppsFolder(startDir = process.cwd()) {
+  const benchPath = findBenchPath(startDir)
   if (!benchPath) {
     return null
   }
@@ -45,20 +53,18 @@ export function findAppsFolder() {
   return path.join(benchPath, 'apps')
 }
 
-export function findAppName() {
-  const appsFolder = findAppsFolder()
+export function findAppName(startDir = process.cwd()) {
+  const appsFolder = findAppsFolder(startDir)
   if (!appsFolder) {
     return null
   }
 
   // Walk up from cwd until we find a directory whose parent is the apps folder
-  let currentDir = path.resolve('.')
-  while (currentDir !== '/') {
+  for (const currentDir of directoryParents(startDir)) {
     const parent = path.dirname(currentDir)
     if (path.resolve(parent) === path.resolve(appsFolder)) {
       return path.basename(currentDir)
     }
-    currentDir = parent
   }
 
   return null

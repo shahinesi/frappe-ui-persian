@@ -1,10 +1,10 @@
 import { dayjs } from '#utils/dayjs'
 import {
-  formatLocaleDate,
   formatLocaleNumber,
   formatLocalePercent,
 } from '../localization/localization'
 import {
+  formatPersianDate,
   getPersianDateFromISO,
   getPersianMonthName,
 } from '../localization/persianCalendar'
@@ -173,48 +173,56 @@ export function formatDate(
   if (/^fa(?:-|$)/i.test(locale)) {
     // Quarter grain is a Gregorian reporting period. Keep its label explicit
     // so a Gregorian quarter is not presented as a Jalali quarter.
-    if (grain === 'quarter' || /Q/.test(dateFormat.replace(/\[[^\]]*\]/g, ''))) {
+    if (
+      grain === 'quarter' ||
+      /Q/.test(dateFormat.replace(/\[[^\]]*\]/g, ''))
+    ) {
       return `فصل ${Math.floor(parsed.month() / 3) + 1} ${parsed.year()}`
     }
 
-    const tokens = dateFormat.replace(/\[[^\]]*\]/g, '')
-    const dateOptions: Intl.DateTimeFormatOptions = {
-      calendar: 'persian',
+    const timeFormat = dateFormat.match(
+      /(?:HH?|hh)(?::mm)?(?::ss)?(?:\s*[aA])?/,
+    )?.[0]
+    const datePattern = dateFormat
+      .replace('[Week of]', '')
+      .replace(/[, ]*(?:HH?|hh)(?::mm)?(?::ss)?(?:\s*[aA])?.*$/, '')
+      .trim()
+    const localizedDatePattern = datePattern.replace(
+      /^(MMMM|MMM) D, YYYY$/,
+      'D $1 YYYY',
+    )
+    const dateTokens = datePattern.replace(/\[[^\]]*\]/g, '')
+    const dateLabel = /YYYY|YY|MMMM|MMM|MM|M|DD|D/.test(dateTokens)
+      ? formatPersianDate(
+          parsed.format('YYYY-MM-DD'),
+          locale,
+          localizedDatePattern,
+        )
+      : ''
+    const timeOptions: Intl.DateTimeFormatOptions = {
+      numberingSystem: 'latn',
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      ...(tokens.includes('YYYY')
-        ? { year: 'numeric' as const }
-        : tokens.includes('YY')
-          ? { year: '2-digit' as const }
-          : {}),
-      ...(tokens.includes('MMMM')
-        ? { month: 'long' as const }
-        : tokens.includes('MMM')
-          ? { month: 'short' as const }
-          : tokens.includes('MM')
-            ? { month: '2-digit' as const }
-            : tokens.includes('M')
-              ? { month: 'numeric' as const }
-              : {}),
-      ...(tokens.includes('DD')
-        ? { day: '2-digit' as const }
-        : tokens.includes('D')
-          ? { day: 'numeric' as const }
-          : {}),
-      ...(tokens.includes('HH') || tokens.includes('hh')
+      ...(timeFormat?.includes('HH') || timeFormat?.includes('hh')
         ? { hour: '2-digit' as const }
-        : tokens.includes('H') || tokens.includes('h')
+        : timeFormat?.includes('H') || timeFormat?.includes('h')
           ? { hour: 'numeric' as const }
           : {}),
-      ...(tokens.includes('mm') ? { minute: '2-digit' as const } : {}),
-      ...(tokens.includes('ss') ? { second: '2-digit' as const } : {}),
-      ...(tokens.includes('A') || tokens.includes('a')
+      ...(timeFormat?.includes('mm') ? { minute: '2-digit' as const } : {}),
+      ...(timeFormat?.includes('ss') ? { second: '2-digit' as const } : {}),
+      ...(timeFormat?.includes('A') || timeFormat?.includes('a')
         ? { hourCycle: 'h12' as const }
-        : tokens.includes('H')
+        : timeFormat?.includes('H')
           ? { hourCycle: 'h23' as const }
           : {}),
     }
-    const label = formatLocaleDate(parsed.toDate(), dateOptions)
-    return dateFormat.includes('[Week of]') ? `هفتهٔ ${label}` : label
+    const timeLabel = timeFormat
+      ? new Intl.DateTimeFormat(locale, timeOptions).format(parsed.toDate())
+      : ''
+    const dateTimeLabel = [dateLabel, timeLabel].filter(Boolean).join(' ')
+    const label = dateFormat.includes('[Week of]')
+      ? `هفتهٔ ${dateTimeLabel}`
+      : dateTimeLabel
+    return label
   }
 
   return parsed.format(dateFormat)

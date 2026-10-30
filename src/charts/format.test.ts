@@ -158,15 +158,13 @@ describe('formatDate', () => {
       expect(formatDate('2023-04-05', 'day')).toBe('16 فرو 1402')
       expect(formatDate('2023-04-05', 'month')).toBe('فرو 1402')
       expect(formatDate('2023-04-05', 'year')).toBe('1402')
-      expect(formatAxisValue('2023-04-05', 'time', 'day')).toBe(
-        '16 فرو 1402',
-      )
-      expect(formatDate('2023-04-04T20:30:00.000Z', 'day')).toBe(
-        '16 فرو 1402',
-      )
+      expect(formatAxisValue('2023-04-05', 'time', 'day')).toBe('16 فرو 1402')
+      expect(formatDate('2023-04-04T20:30:00.000Z', 'day')).toBe('16 فرو 1402')
       expect(
         formatDate('2023-04-04T20:30:00.000Z', 'minute', 'YYYY-MM-DD HH:mm'),
-      ).toContain('00:00')
+      ).toBe('1402-01-16 00:00')
+      expect(formatDate('2023-04-04T20:29:59.000Z', 'day')).toBe('15 فرو 1402')
+      expect(formatDate('2023-04-04T20:30:00.000Z', 'day')).toBe('16 فرو 1402')
       expect(formatDate('2023-04-05', 'quarter')).toBe('فصل 2 2023')
     } finally {
       vi.unstubAllGlobals()

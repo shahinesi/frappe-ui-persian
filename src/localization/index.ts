@@ -3,6 +3,8 @@ export {
   formatLocaleDateRange,
   formatLocaleNumber,
   formatLocalePercent,
+  getGregorianDateParts,
+  type GregorianDateParts,
   useLocalizedText,
   useDocumentLocale,
   type DocumentLocale,

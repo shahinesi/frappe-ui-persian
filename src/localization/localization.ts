@@ -132,6 +132,27 @@ export function formatLocalePercent(
   }).format(value / 100)
 }
 
+export type GregorianDateParts = { year: number; month: number; day: number }
+
+/** Read Gregorian civil date parts in an optional timezone. */
+export function getGregorianDateParts(
+  date: Date,
+  timeZone?: string,
+): GregorianDateParts {
+  const parts = new Intl.DateTimeFormat('en-US-u-ca-gregory-nu-latn', {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    timeZone,
+  }).formatToParts(date)
+  const fields = Object.fromEntries(parts.map(({ type, value }) => [type, value]))
+  return {
+    year: Number(fields.year),
+    month: Number(fields.month),
+    day: Number(fields.day),
+  }
+}
+
 /**
  * Format a date for display using an optional host locale or the document
  * language, and jalaali-js when Persian calendar presentation is requested or
@@ -317,14 +338,8 @@ function shouldUsePersianCalendar(
 }
 
 function getJalaliFields(date: Date, timeZone = 'UTC') {
-  const parts = new Intl.DateTimeFormat('en-US-u-ca-gregory-nu-latn', {
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    timeZone,
-  }).formatToParts(date)
-  const fields = Object.fromEntries(parts.map(({ type, value }) => [type, value]))
-  return toJalaali(Number(fields.year), Number(fields.month), Number(fields.day))
+  const { year, month, day } = getGregorianDateParts(date, timeZone)
+  return toJalaali(year, month, day)
 }
 
 function formatJalaliParts(

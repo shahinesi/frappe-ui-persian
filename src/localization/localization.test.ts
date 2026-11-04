@@ -8,6 +8,7 @@ import {
   formatLocaleDateRange,
   formatLocaleNumber,
   formatLocalePercent,
+  getGregorianDateParts,
   resolveCalendar,
   useDocumentLocale,
   useLocalizedText,
@@ -217,6 +218,12 @@ describe('formatLocalePercent', () => {
 })
 
 describe('formatLocaleDate', () => {
+  it('reads Gregorian civil dates in the requested timezone', () => {
+    expect(
+      getGregorianDateParts(new Date('2026-03-20T20:30:00Z'), 'Asia/Tehran'),
+    ).toEqual({ year: 2026, month: 3, day: 21 })
+  })
+
   it('formats with an explicit host locale while keeping canonical dates and English behavior', () => {
     document.documentElement.lang = 'en-US'
     expect(
@@ -225,6 +232,16 @@ describe('formatLocaleDate', () => {
     expect(
       formatLocaleDate('2025-03-20', { dateStyle: 'medium' }, 'en-US'),
     ).toBe('Mar 20, 2025')
+  })
+
+  it('keeps complete Persian month names when a caller requests an abbreviated month', () => {
+    expect(
+      formatLocaleDate(
+        '2025-03-21',
+        { month: 'short', day: 'numeric' },
+        'fa-IR',
+      ),
+    ).toContain('فروردین')
   })
 
   it('formats a Gregorian ISO date as Persian presentation when requested', () => {

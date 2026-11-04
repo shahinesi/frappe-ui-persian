@@ -110,8 +110,8 @@ export function getPersianMonthName(
     throw new RangeError('Persian year/month is outside the supported range')
   }
   const [persianName, englishName] = PERSIAN_MONTH_NAMES[month - 1]
-	const name = isPersianLocale(locale) ? persianName : englishName
-  return style === 'short' ? name.slice(0, 3) : name
+  const name = isPersianLocale(locale) ? persianName : englishName
+  return isPersianLocale(locale) || style === 'long' ? name : name.slice(0, 3)
 }
 
 /** Parse a Persian-calendar date into a Gregorian ISO date-only value. */

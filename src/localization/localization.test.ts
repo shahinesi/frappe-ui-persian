@@ -177,6 +177,13 @@ describe('formatLocaleNumber', () => {
     expect(formatLocaleDate('2025-03-20', { dateStyle: 'long' })).toBe('30 اسفند 1403')
   })
 
+  it('formats an explicit host locale without changing the document locale', () => {
+    document.documentElement.lang = 'en-US'
+    expect(formatLocaleNumber(123456.7, { maximumFractionDigits: 1 }, 'fa-IR')).toBe('123,456.7')
+    expect(formatLocaleNumber(123456.7, { maximumFractionDigits: 1 }, 'en-IN')).toBe('1,23,456.7')
+    expect(formatLocaleNumber(1234.5, { maximumFractionDigits: 1 })).toBe('1,234.5')
+  })
+
   it('keeps absent values distinct from zero', () => {
     expect(formatLocaleNumber(null)).toBe('')
     expect(formatLocaleNumber(undefined)).toBe('')
@@ -210,6 +217,16 @@ describe('formatLocalePercent', () => {
 })
 
 describe('formatLocaleDate', () => {
+  it('formats with an explicit host locale while keeping canonical dates and English behavior', () => {
+    document.documentElement.lang = 'en-US'
+    expect(
+      formatLocaleDate('2025-03-20', { dateStyle: 'long' }, 'fa-IR'),
+    ).toBe('30 اسفند 1403')
+    expect(
+      formatLocaleDate('2025-03-20', { dateStyle: 'medium' }, 'en-US'),
+    ).toBe('Mar 20, 2025')
+  })
+
   it('formats a Gregorian ISO date as Persian presentation when requested', () => {
     document.documentElement.lang = 'fa-IR'
     expect(
@@ -253,6 +270,19 @@ describe('formatLocaleDate', () => {
 })
 
 describe('formatLocaleDateRange', () => {
+  it('formats for an explicit host locale without changing the document locale', () => {
+    document.documentElement.lang = 'en-US'
+    expect(
+      formatLocaleDateRange(
+        '2026-03-20',
+        '2026-03-21',
+        { day: 'numeric', month: 'long', year: 'numeric' },
+        'fa-IR',
+      ),
+    ).toBe('29 اسفند 1404 تا 1 فروردین 1405')
+    expect(document.documentElement.lang).toBe('en-US')
+  })
+
   it('formats Gregorian ISO date-only ranges as Persian without changing their days', () => {
     document.documentElement.lang = 'fa-IR'
     expect(

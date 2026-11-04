@@ -99,16 +99,17 @@ export function useLocalizedText(
 }
 
 /**
- * Format a display value using the language declared on the document.
+ * Format a display value using an optional host locale or the document locale.
  * `null`, `undefined`, and `NaN` mean no value and return an empty string;
  * zero remains a real value. Data passed to this helper is never mutated.
  */
 export function formatLocaleNumber(
   value: number | null | undefined,
   options: Intl.NumberFormatOptions = {},
+  localeOverride?: string | null,
 ): string {
   if (value === null || value === undefined || Number.isNaN(value)) return ''
-  return new Intl.NumberFormat(toIntlLocale(documentLocale()), {
+  return new Intl.NumberFormat(toIntlLocale(localeOverride || documentLocale()), {
     ...options,
     numberingSystem: 'latn',
   }).format(value)
@@ -132,9 +133,9 @@ export function formatLocalePercent(
 }
 
 /**
- * Format a date for display using the document language and jalaali-js when
- * Persian calendar presentation is requested or the document language is
- * Persian.
+ * Format a date for display using an optional host locale or the document
+ * language, and jalaali-js when Persian calendar presentation is requested or
+ * the selected language is Persian.
  * A date-only ISO value is interpreted as a calendar date in UTC, so it cannot
  * shift to the previous day when the browser is behind UTC. When no options are
  * given, the browser formats a medium-length date in UTC. Pass `calendar:
@@ -148,6 +149,7 @@ export function formatLocalePercent(
 export function formatLocaleDate(
   value: Date | string | number | null | undefined,
   options: Intl.DateTimeFormatOptions = {},
+  localeOverride?: string | null,
 ): string {
   if (value === null || value === undefined || value === '') return ''
 
@@ -162,7 +164,7 @@ export function formatLocaleDate(
   if (parsed.dateOnly) formatOptions.timeZone = 'UTC'
   else if (!formatOptions.timeZone) formatOptions.timeZone = 'UTC'
 
-  const locale = documentLocale()
+  const locale = localeOverride || documentLocale()
   const usePersianCalendar = shouldUsePersianCalendar(options.calendar, locale)
   const formatter = new Intl.DateTimeFormat(toIntlLocale(locale), {
     ...formatOptions,
@@ -181,8 +183,8 @@ export function formatLocaleDate(
 }
 
 /**
- * Format a date range using the document language and jalaali-js for Persian
- * calendar presentation.
+ * Format a date range using an optional host locale or the document language
+ * and jalaali-js for Persian calendar presentation.
  * Date-only `YYYY-MM-DD` endpoints are interpreted as UTC calendar dates to
  * avoid timezone day shifts. Inputs remain unchanged; invalid or absent
  * endpoints, and reversed ranges, return an empty string.
@@ -191,6 +193,7 @@ export function formatLocaleDateRange(
   start: Date | string | number | null | undefined,
   end: Date | string | number | null | undefined,
   options: LocaleDateRangeFormatOptions = {},
+  localeOverride?: string | null,
 ): string {
   if (
     start === null ||
@@ -225,7 +228,7 @@ export function formatLocaleDateRange(
     formatOptions.timeZone = 'UTC'
   }
 
-  const locale = documentLocale()
+  const locale = localeOverride || documentLocale()
   const usePersianCalendar = shouldUsePersianCalendar(options.calendar, locale)
   const formatter = new Intl.DateTimeFormat(toIntlLocale(locale), {
     ...formatOptions,

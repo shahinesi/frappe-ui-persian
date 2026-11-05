@@ -5,6 +5,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { migrateEditor } from './migrate-editor-v1.js'
+import { createFileSymlinkOrSkip } from '../test-utils/symlink.js'
 
 const SCRIPT = fileURLToPath(new URL('./migrate-editor-v1.js', import.meta.url))
 const tempDirs = []
@@ -208,11 +209,11 @@ describe('editor v1 migration', () => {
     expect(fs.readFileSync(path.join(dir, 'Menu.vue'), 'utf8')).toBe(source)
   })
 
-  it('runs through a package-style symlink', () => {
+  it('runs through a package-style symlink', (ctx) => {
     const source = `<script setup>\nimport { EditorFixedMenu } from 'frappe-ui/editor'\n</script>\n<template><EditorFixedMenu button-size="sm" /></template>\n`
     const dir = tempDir({ 'Menu.vue': source })
     const bin = path.join(dir, 'editor-v1')
-    fs.symlinkSync(SCRIPT, bin)
+    createFileSymlinkOrSkip(SCRIPT, bin, ctx)
 
     const result = spawnSync(process.execPath, [bin, dir], { encoding: 'utf8' })
 

@@ -48,6 +48,7 @@
   },
   "scripts": {
     "test": "vitest --run",
+    "test:windows": "vitest --run --pool=threads --maxWorkers=2 --minWorkers=2 --testTimeout=15000 --hookTimeout=30000",
     "test:coverage": "vitest --run --coverage",
     "test:cypress": "cypress run --component",
     "test:cypress:coverage": "cross-env COVERAGE=true cypress run --component && nyc report",
@@ -96,6 +97,10 @@
     "./localization": {
       "import": "./src/localization/index.ts",
       "types": "./src/localization/index.ts"
+    },
+    "./localization/calendar": {
+      "import": "./src/localization/calendar.ts",
+      "types": "./src/localization/calendar.ts"
     },
     "./localization/style.css": {
       "style": "./src/localization/style.css",
@@ -181,6 +186,7 @@
     "@floating-ui/dom": "^1.7.4",
     "@floating-ui/vue": "^1.1.9",
     "@lezer/highlight": "^1.0.0",
+    "@persian-tools/persian-tools": "^4.0.4",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.16",
     "@tiptap/core": "^3.26.0",
@@ -222,6 +228,7 @@
     "fuzzysort": "^3.1.0",
     "highlight.js": "^11.11.1",
     "idb-keyval": "^6.2.0",
+    "jalaali-js": "^2.0.1",
     "lowlight": "^3.3.0",
     "lucide-static": "^1.31.0",
     "magic-string": "^0.30.21",

@@ -11,6 +11,13 @@ type SuffixSlotProps = {
 }
 
 describe('TimePicker', () => {
+  afterEach(() => {
+    cy.document().then((document) => {
+      document.documentElement.lang = ''
+      document.documentElement.dir = ''
+    })
+  })
+
   it('renders', () => {
     cy.mount(TimePicker)
 
@@ -91,6 +98,44 @@ describe('TimePicker', () => {
     cy.get('input').should('have.value', '14:30')
     cy.get('input').click()
     cy.get('[role=option]').eq(0).should('have.text', '00:00')
+  })
+
+  it('keeps display digits canonical and accepts Persian input without changing the model', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    const onUpdate = cy.spy().as('onUpdate')
+    cy.mount(TimePicker, {
+      props: {
+        modelValue: '12:30',
+        interval: 60,
+        'onUpdate:modelValue': onUpdate,
+      },
+    })
+
+    cy.get('input').should('have.value', '12:30').click()
+    cy.get('[role=option][data-value="13:00"]').should('have.text', '13:00')
+    cy.get('[role=option][data-value="13:00"]').click()
+    cy.get('@onUpdate').should('have.been.calledWith', '13:00')
+    cy.get('input').should('have.value', '13:00').clear().type('۱۶:۴۵{enter}')
+    cy.get('@onUpdate').should('have.been.calledWith', '16:45')
+    cy.get('input').should('have.value', '16:45')
+  })
+
+  it('keeps time digits canonical across document locale changes', () => {
+    cy.document().then((document) => {
+      document.documentElement.lang = 'fa-IR'
+      document.documentElement.dir = 'rtl'
+    })
+    cy.mount(TimePicker, { props: { modelValue: '12:30' } })
+
+    cy.get('input').should('have.value', '12:30')
+    cy.document().then((document) => {
+      document.documentElement.lang = 'en-US'
+      document.documentElement.dir = 'ltr'
+    })
+    cy.get('input').should('have.value', '12:30')
   })
 
   it('formats options with a zero-padded 12-hour format and emits canonical values', () => {

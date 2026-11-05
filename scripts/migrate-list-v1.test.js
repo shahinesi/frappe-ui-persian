@@ -5,6 +5,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { componentAliases, migrateList } from './migrate-list-v1.js'
+import {
+  createDirectorySymlink,
+  createFileSymlinkOrSkip,
+} from '../test-utils/symlink.js'
 
 const SCRIPT = fileURLToPath(new URL('./migrate-list-v1.js', import.meta.url))
 const PACKAGE = fileURLToPath(new URL('../package.json', import.meta.url))
@@ -227,7 +231,7 @@ describe('CLI', () => {
       'docs/ListSpec.md': `\`\`\`vue\n<script setup>import { ListGroup } from 'frappe-ui/list'</script>\n<ListGroup><template #header>Example</template></ListGroup>\n\`\`\``,
       'notes.txt': `<ListGroup><template #header>Old</template></ListGroup>`,
     })
-    fs.symlinkSync(path.join(dir, 'src'), path.join(dir, 'linked'))
+    createDirectorySymlink(path.join(dir, 'src'), path.join(dir, 'linked'))
     fs.writeFileSync(
       path.join(dir, 'src/Example.vue'),
       `<script setup>import { ListGroup } from 'frappe-ui/list'</script>\n<ListGroup><template #header>Title</template></ListGroup>`,
@@ -245,20 +249,20 @@ describe('CLI', () => {
     expect(
       fs.readFileSync(path.join(dir, 'docs/migration.md'), 'utf8'),
     ).toContain('#header')
-    expect(fs.readFileSync(path.join(dir, 'docs/ListSpec.md'), 'utf8')).toContain(
-      '#label',
-    )
+    expect(
+      fs.readFileSync(path.join(dir, 'docs/ListSpec.md'), 'utf8'),
+    ).toContain('#label')
     expect(fs.readFileSync(path.join(dir, 'notes.txt'), 'utf8')).toContain(
       '#header',
     )
   })
 
-  it('runs through an installed-bin symlink and reports bad targets', () => {
+  it('runs through an installed-bin symlink and reports bad targets', (ctx) => {
     const dir = tempDir({
       'Example.vue': `<script setup>import { ListGroup } from 'frappe-ui/list'</script>\n<ListGroup><template #header>Title</template></ListGroup>`,
     })
     const bin = path.join(dir, 'list-v1')
-    fs.symlinkSync(SCRIPT, bin)
+    createFileSymlinkOrSkip(SCRIPT, bin, ctx)
 
     expect(run([dir], bin).status).toBe(0)
     const missing = run([path.join(dir, 'missing')])
@@ -275,6 +279,7 @@ describe('CLI', () => {
 
     expect(pkg.bin['list-v1']).toBe('./scripts/migrate-list-v1.js')
     expect(pkg.files).toContain('scripts/migrate-list-v1.js')
-    expect(fs.statSync(SCRIPT).mode & 0o111).not.toBe(0)
+    if (process.platform !== 'win32')
+      expect(fs.statSync(SCRIPT).mode & 0o111).not.toBe(0)
   })
 })

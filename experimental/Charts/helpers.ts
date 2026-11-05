@@ -1,4 +1,11 @@
 import { dayjs } from '#utils/dayjs'
+import { formatLocaleNumber } from '../../src/localization/localization'
+import { resolveCalendar } from '../../src/localization/calendar'
+import {
+  formatPersianDate,
+  getPersianDateFromISO,
+} from '../../src/localization/persianCalendar'
+import { readDocumentLocale } from '../../src/utils/readDocumentLocale'
 
 export function formatLabel(name: string) {
   return name
@@ -10,12 +17,13 @@ export function formatLabel(name: string) {
 export function formatValue(value: number, precision = 0, shorten = false) {
   if (isNaN(value)) return value.toString()
 
-  let locale = 'en-US'
+  const locale = readDocumentLocale()
 
   if (shorten) {
     let formatted = new Intl.NumberFormat(locale, {
       notation: 'compact',
       maximumFractionDigits: precision,
+      numberingSystem: 'latn',
     }).format(value)
 
     if (locale == 'en-IN') {
@@ -25,10 +33,10 @@ export function formatValue(value: number, precision = 0, shorten = false) {
     return formatted
   } else {
     precision = precision || guessPrecision(value)
-    return new Intl.NumberFormat(locale, {
+    return formatLocaleNumber(value, {
       minimumFractionDigits: precision,
       maximumFractionDigits: precision,
-    }).format(value)
+    })
   }
 }
 
@@ -49,8 +57,53 @@ export type TimeGrain =
   | 'month'
   | 'quarter'
   | 'year'
+
+const PERSIAN_DATE_FORMATS: Record<Exclude<TimeGrain, 'quarter'>, string> = {
+  second: 'MMMM D, YYYY',
+  minute: 'MMMM D, YYYY',
+  hour: 'MMMM D, YYYY',
+  day: 'MMMM D, YYYY',
+  week: 'MMM D, YYYY',
+  month: 'MMMM, YYYY',
+  year: 'YYYY',
+}
+
 export function formatDate(date: string, format?: string, grain: TimeGrain = 'day') {
   if (!date) return ''
+
+  const parsed = dayjs(date)
+  if (!parsed.isValid()) return parsed.format()
+
+  if (resolveCalendar('auto') === 'persian') {
+    const locale = readDocumentLocale()
+    if (grain === 'quarter') {
+      const persianDate = getPersianDateFromISO(parsed.format('YYYY-MM-DD'))
+      const quarter = Math.floor((persianDate.month - 1) / 3) + 1
+      return `سه‌ماههٔ ${formatLocaleNumber(quarter)} ${formatLocaleNumber(
+        persianDate.year,
+        { useGrouping: false },
+      )}`
+    }
+
+    const formattedDate = formatPersianDate(
+      parsed.format('YYYY-MM-DD'),
+      locale,
+      PERSIAN_DATE_FORMATS[grain],
+    )
+    if (!['hour', 'minute', 'second'].includes(grain)) return formattedDate
+
+    const timeOptions: Intl.DateTimeFormatOptions = {
+      hour: '2-digit',
+      minute: '2-digit',
+      numberingSystem: 'latn',
+      ...(grain === 'second' ? { second: '2-digit' } : {}),
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    }
+    const time = new Intl.DateTimeFormat(locale, timeOptions).format(
+      parsed.toDate(),
+    )
+    return `${formattedDate} ${time}`
+  }
 
   if (grain) {
     const grainToFormat: Record<TimeGrain, string> = {

@@ -10,7 +10,7 @@
 import { execFileSync } from 'node:child_process'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import effects from './tokens/effects.js'
 import * as tokens from './tokens.js'
@@ -120,7 +120,7 @@ describe('native node', () => {
       [
         '--input-type=module',
         '-e',
-        `import { radius, semanticColors } from ${JSON.stringify(entryPath)}
+        `import { radius, semanticColors } from ${JSON.stringify(pathToFileURL(entryPath).href)}
          console.log(radius['4'], semanticColors.light.surface.base)`,
       ],
       { encoding: 'utf8' },

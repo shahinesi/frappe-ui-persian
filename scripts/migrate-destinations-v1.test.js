@@ -5,6 +5,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { migrateDestinations } from './migrate-destinations-v1.js'
+import {
+  createDirectorySymlink,
+  createFileSymlinkOrSkip,
+} from '../test-utils/symlink.js'
 
 const SCRIPT = fileURLToPath(
   new URL('./migrate-destinations-v1.js', import.meta.url),
@@ -136,13 +140,13 @@ import Button from './Button.vue'
     expect(fs.readFileSync(file, 'utf8')).toContain(' link=')
   })
 
-  it('runs through an installed-bin symlink and rejects unknown options', () => {
+  it('runs through an installed-bin symlink and rejects unknown options', (ctx) => {
     const file = tempFile(
       `<script setup>import { Button } from 'frappe-ui'</script>
 <template><Button link="https://frappe.io" /></template>`,
     )
     const bin = path.join(path.dirname(file), 'destinations-v1')
-    fs.symlinkSync(SCRIPT, bin)
+    createFileSymlinkOrSkip(SCRIPT, bin, ctx)
 
     const migrated = spawnSync(process.execPath, [bin, file], {
       encoding: 'utf8',
@@ -163,7 +167,7 @@ import Button from './Button.vue'
 <template><Button link="https://frappe.io" /></template>`,
     )
     const dir = path.dirname(file)
-    fs.symlinkSync(dir, path.join(dir, 'loop'))
+    createDirectorySymlink(dir, path.join(dir, 'loop'))
 
     const result = spawnSync(process.execPath, [SCRIPT, '--dry-run', dir], {
       encoding: 'utf8',

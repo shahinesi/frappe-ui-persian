@@ -41,8 +41,25 @@ the range into "Depart" and "Return" fields over one calendar.
 | `DateTimePicker`  | `'YYYY-MM-DD HH:mm:ss'`                   |
 | `DateRangePicker` | `[from, to]` as `'YYYY-MM-DD'`, or `[]`   |
 
-`format` changes only the text shown in the input, not the value. Type a range
-with `DateRangeValue`, exported from `frappe-ui`.
+`format` changes only the text shown in the input, not the value. The
+`DateTimePicker` calendar panel follows the document locale and its date-time
+model remains Gregorian ISO. Type a range with `DateRangeValue`, exported from
+`frappe-ui`.
+
+`DateRangePicker` emits only a complete two-ended range or `[]`. Its first
+calendar click is an internal pending endpoint; incomplete typed ranges are
+rejected and the input returns to the current value. Use two `DatePicker`
+controls when a form needs open-ended date filters.
+
+Date controls default to the Persian calendar when the document locale is `fa`
+and Gregorian otherwise. Set `calendar="gregorian"` or `calendar="persian"` to
+override that choice. The model, `min`/`max`, selection events, and
+unavailable-date callback continue to use Gregorian ISO dates. Numeric
+formats and `MMM`/`MMMM` Jalali month names are accepted for typed dates; a
+format without a year uses the current Jalali year when parsing.
+
+Use `todayLabel` to localize the calendar's Today action; pass an empty string
+to hide it. The input `placeholder` can also be localized per picker.
 
 ### Limits
 

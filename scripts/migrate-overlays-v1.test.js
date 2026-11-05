@@ -8,12 +8,16 @@ import {
   listOverlayScriptRefusals,
   migrateOverlays,
 } from './migrate-overlays-v1.js'
+import { createFileSymlinkOrSkip } from '../test-utils/symlink.js'
 
-const SCRIPT = fileURLToPath(new URL('./migrate-overlays-v1.js', import.meta.url))
+const SCRIPT = fileURLToPath(
+  new URL('./migrate-overlays-v1.js', import.meta.url),
+)
 const tempDirs = []
 
 afterEach(() => {
-  for (const dir of tempDirs.splice(0)) fs.rmSync(dir, { recursive: true, force: true })
+  for (const dir of tempDirs.splice(0))
+    fs.rmSync(dir, { recursive: true, force: true })
 })
 
 function tempDir(files) {
@@ -64,7 +68,9 @@ describe('overlay control migration', () => {
     const source = `<template><DatePicker><template #trigger="{ toggle: togglePicker, displayLabel }"><button @click="togglePicker()">{{ displayLabel }}</button></template></DatePicker></template>`
     const result = migrateOverlays(source)
     expect(result.refusals).toEqual([])
-    expect(result.migrated).toContain('{ setOpen: togglePicker, displayLabel, open }')
+    expect(result.migrated).toContain(
+      '{ setOpen: togglePicker, displayLabel, open }',
+    )
     expect(result.migrated).toContain('@click="togglePicker(!open)"')
   })
 
@@ -94,7 +100,9 @@ describe('overlay control migration', () => {
     const result = migrateOverlays(source)
     expect(result.refusals).toEqual([])
     expect(result.migrated).toContain(`:title="score > 1 ? '<template>' : 'x'"`)
-    expect(result.migrated).toContain('<i18n>{"sample":"<template #trigger=\\"{ toggle }\\">"}</i18n>')
+    expect(result.migrated).toContain(
+      '<i18n>{"sample":"<template #trigger=\\"{ toggle }\\">"}</i18n>',
+    )
   })
 
   it('does not rename slots owned by nested components', () => {
@@ -135,18 +143,26 @@ describe('picker prop and CLI migration', () => {
     expect(result.migrated).toContain('<DateTimePicker typeable/>')
   })
 
-  it('runs through a symlink and leaves refused files unchanged', () => {
-    const dir = tempDir({ 'Good.vue': `<template><Tooltip hover-delay="0.5"/></template>` })
+  it('runs through a symlink and leaves refused files unchanged', (ctx) => {
+    const dir = tempDir({
+      'Good.vue': `<template><Tooltip hover-delay="0.5"/></template>`,
+    })
     const bin = path.join(dir, 'overlays-v1')
-    fs.symlinkSync(SCRIPT, bin)
+    createFileSymlinkOrSkip(SCRIPT, bin, ctx)
     const run = spawnSync(process.execPath, [bin, dir], { encoding: 'utf8' })
     expect(run.status).toBe(0)
     expect(fs.readFileSync(path.join(dir, 'Good.vue'), 'utf8')).toContain('500')
 
-    const refused = tempDir({ 'Bad.vue': `<template><Tooltip :hover-delay="delay"/></template>` })
-    const failed = spawnSync(process.execPath, [SCRIPT, refused], { encoding: 'utf8' })
+    const refused = tempDir({
+      'Bad.vue': `<template><Tooltip :hover-delay="delay"/></template>`,
+    })
+    const failed = spawnSync(process.execPath, [SCRIPT, refused], {
+      encoding: 'utf8',
+    })
     expect(failed.status).toBe(1)
     expect(failed.stderr).toContain('left unchanged')
-    expect(fs.readFileSync(path.join(refused, 'Bad.vue'), 'utf8')).toContain('delay')
+    expect(fs.readFileSync(path.join(refused, 'Bad.vue'), 'utf8')).toContain(
+      'delay',
+    )
   })
 })

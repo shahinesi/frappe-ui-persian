@@ -16,7 +16,7 @@
     :required="props.required"
     :size="props.size"
     :variant="props.variant"
-    :placeholder="props.placeholder"
+    :placeholder="localizedPlaceholder"
     :disabled="props.disabled"
     :readonly="inputReadonly"
     :display-label="displayLabel"
@@ -44,7 +44,7 @@
         <aside
           v-if="$slots.actions"
           data-slot="actions"
-          aria-label="Shortcuts"
+          :aria-label="localizedShortcuts"
           class="flex flex-col p-2 gap-0.5"
         >
           <slot
@@ -66,7 +66,8 @@
           ref="calendarRef"
           :model-value="[fromDate, toDate]"
           :dual-pane="props.dualPane"
-          today-label="Today"
+          :calendar="props.calendar"
+          :today-label="props.todayLabel"
           :min="props.min"
           :max="props.max"
           :is-date-unavailable="props.isDateUnavailable"
@@ -81,6 +82,9 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch } from 'vue'
 import { dayjs } from '../../utils/dayjs'
+import { formatPersianDate, parsePersianDate } from '../../localization/persianCalendar'
+import { isPersianLocale, resolveCalendar } from '../../localization/calendar'
+import { useDocumentLocale, useLocalizedText } from '../../localization/localization'
 import { orderRange, rangeKey, stepRange } from './utils'
 import DateRangeCalendar from './DateRangeCalendar.vue'
 import PickerShell from '../shared/picker/PickerShell.vue'
@@ -108,14 +112,18 @@ const props = withDefaults(defineProps<DateRangePickerProps>(), {
   modelValue: () => [],
   variant: 'subtle',
   placeholder: 'Select range',
+  todayLabel: 'Today',
   typeable: true,
   disabled: false,
   clearable: true,
   dualPane: false,
   openOnFocus: false,
   openOnClick: true,
+  calendar: 'auto',
 })
 const emit = defineEmits<DateRangePickerEmits>()
+const localizedPlaceholder = useLocalizedText(() => props.placeholder)
+const localizedShortcuts = useLocalizedText('Shortcuts')
 
 defineSlots<DateRangePickerSlots>()
 
@@ -179,6 +187,10 @@ const inputReadonly = useTypeable(props)
 // ── Range state ──────────────────────────────────────────────────────────────
 
 const DATE_FORMAT = 'YYYY-MM-DD'
+const { locale } = useDocumentLocale()
+const isPersianCalendar = computed(
+  () => resolveCalendar(props.calendar, locale.value) === 'persian',
+)
 const fromDate = ref<string>('')
 const toDate = ref<string>('')
 
@@ -201,13 +213,23 @@ function normalizeIncoming(val?: string[] | null): [string, string] {
 
 function parseRangeInput(raw: string): [Dayjs | null, Dayjs | null] {
   if (!raw.trim()) return [null, null]
-  const normalized = raw.replace(/\s+to\s+/i, ',').replace(/\s+-\s+/g, ',')
+  const normalized = raw
+    .replace(/\s+(?:to|تا)\s+/i, ',')
+    .replace(/\s+[–—-]\s+/g, ',')
   const parts = normalized
     .split(',')
     .map((p) => p.trim())
     .filter(Boolean)
   if (!parts.length) return [null, null]
-  return [coerceToDayjs(parts[0]), coerceToDayjs(parts[1])]
+  const parse = (value?: string) => {
+    if (!value) return null
+    if (isPersianCalendar.value) {
+      const isoDate = parsePersianDate(value, props.format ?? 'YYYY/MM/DD', locale.value)
+      return isoDate ? dayjs(isoDate) : coerceToDayjs(value)
+    }
+    return coerceToDayjs(value)
+  }
+  return [parse(parts[0]), parse(parts[1])]
 }
 
 function pickIncoming(): string[] {
@@ -243,6 +265,9 @@ const displayLabel = computed<string>(() =>
 
 function formatOne(dateStr: string): string {
   if (!dateStr) return ''
+  if (isPersianCalendar.value) {
+    return formatPersianDate(dateStr, locale.value, props.format ?? 'YYYY/MM/DD')
+  }
   const d = dayjs(dateStr)
   if (!d.isValid()) return dateStr
   return props.format ? d.format(props.format) : dateStr
@@ -250,7 +275,8 @@ function formatOne(dateStr: string): string {
 function formatDisplay(from: string, to: string): string {
   if (!from && !to) return ''
   if (from && !to) return formatOne(from)
-  return `${formatOne(from)} to ${formatOne(to)}`
+  const separator = isPersianLocale(locale.value) ? ' تا ' : ' to '
+  return `${formatOne(from)}${separator}${formatOne(to)}`
 }
 
 const inputValue = ref<string>(displayLabel.value)
@@ -269,9 +295,12 @@ function commitInput(close = false): void {
     return
   }
   const [f, t] = parseRangeInput(raw)
-  if (f && !checkUnavailable(f)) fromDate.value = f.format(DATE_FORMAT)
-  if (t && !checkUnavailable(t)) toDate.value = t.format(DATE_FORMAT)
-  else if (!t) toDate.value = ''
+  if (!f || !t || checkUnavailable(f) || checkUnavailable(t)) {
+    inputValue.value = displayLabel.value
+    return
+  }
+  fromDate.value = f.format(DATE_FORMAT)
+  toDate.value = t.format(DATE_FORMAT)
   setOrdered([fromDate.value, toDate.value])
   emitIfChanged()
   inputValue.value = displayLabel.value

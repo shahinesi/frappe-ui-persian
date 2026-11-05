@@ -5,6 +5,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { migrateBaseProps } from './migrate-base-props-v1.js'
+import { createDirectorySymlink } from '../test-utils/symlink.js'
 
 const SCRIPT = fileURLToPath(
   new URL('./migrate-base-props-v1.js', import.meta.url),
@@ -155,12 +156,17 @@ describe('base props migration', () => {
     expect(fs.readFileSync(path.join(dir, 'Example.vue'), 'utf8')).toBe(source)
   })
 
-  it('runs through an installed-style binary symlink', () => {
+  it('runs through an installed-style binary symlink', (ctx) => {
     const dir = tempDir({
       'Example.vue': `<template><Divider position="end" /></template>`,
     })
     const bin = path.join(dir, 'base-props-v1')
-    fs.symlinkSync(SCRIPT, bin)
+    try {
+      fs.symlinkSync(SCRIPT, bin)
+    } catch (error) {
+      if (process.platform === 'win32' && error.code === 'EPERM') ctx.skip()
+      throw error
+    }
     const result = spawnSync(process.execPath, [bin, dir], { encoding: 'utf8' })
     expect(result.status).toBe(0)
     expect(fs.readFileSync(path.join(dir, 'Example.vue'), 'utf8')).toContain(
@@ -173,7 +179,7 @@ describe('base props migration', () => {
       'Outside.vue': `<template><Icon name="lucide-x" /></template>`,
     })
     const dir = tempDir({})
-    fs.symlinkSync(outside, path.join(dir, 'linked'), 'dir')
+    createDirectorySymlink(outside, path.join(dir, 'linked'))
 
     const result = spawnSync(process.execPath, [SCRIPT, dir], {
       encoding: 'utf8',

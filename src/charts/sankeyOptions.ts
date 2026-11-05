@@ -1,7 +1,7 @@
 import type { EChartsCoreOption } from 'echarts/core'
 import { BLUR_OPACITY, DATA_LABEL_FONT_SIZE, toNumber } from './axisChartCommon'
 import { formatValue } from './format'
-import { CHART_FONT_FAMILY } from './measureText'
+import { getChartFontFamily } from './measureText'
 import { paletteColors, type ChartTokens } from './tokens'
 import { mergeDeep } from './utils'
 import type {
@@ -170,7 +170,7 @@ export function buildSankeyOption(
     animation: true,
     animationDuration: 500,
     animationDurationUpdate: 300,
-    textStyle: { fontFamily: CHART_FONT_FAMILY },
+    textStyle: { fontFamily: getChartFontFamily() },
     // No `tooltip` key and no TooltipComponent: a sankey has no axis pointer to
     // drive, and the visible tooltip is a Vue component (ChartTooltip).
     series: [

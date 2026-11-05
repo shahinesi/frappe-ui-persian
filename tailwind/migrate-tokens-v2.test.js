@@ -13,6 +13,10 @@ import {
   migrateTokens,
   writeInkShiftMarker,
 } from './migrate-tokens-v2.js'
+import {
+  createDirectorySymlink,
+  createFileSymlinkOrSkip,
+} from '../test-utils/symlink.js'
 
 const tempDirs = []
 
@@ -24,9 +28,13 @@ afterEach(() => {
 
 describe('tokens v2 migration', () => {
   it('runs the full migration for unmigrated content', () => {
-    const result = migrateTokens('<div class="bg-surface-white text-xl font-medium"></div>')
+    const result = migrateTokens(
+      '<div class="bg-surface-white text-xl font-medium"></div>',
+    )
 
-    expect(result.migrated).toBe('<div class="bg-surface-base text-2xl-medium"></div>')
+    expect(result.migrated).toBe(
+      '<div class="bg-surface-base text-2xl-medium"></div>',
+    )
   })
 
   it('runs typography-only correction for already migrated content', () => {
@@ -62,13 +70,24 @@ describe('tokens v2 migration', () => {
   it('flags text-tiny and dropped xl sizes in every mode without rewriting them (#940)', () => {
     const full = migrateTokens('<div class="text-tiny text-14xl-bold"></div>')
     expect(full.migrated).toBe('<div class="text-tiny text-14xl-bold"></div>')
-    expect(full.flagged.map((f) => f.token)).toEqual(['text-tiny', 'text-14xl-bold'])
+    expect(full.flagged.map((f) => f.token)).toEqual([
+      'text-tiny',
+      'text-14xl-bold',
+    ])
 
-    const migrated = migrateTokens('<div class="text-tiny text-14xl-bold"></div>', {
-      mode: 'migrated-typography',
-    })
-    expect(migrated.migrated).toBe('<div class="text-tiny text-14xl-bold"></div>')
-    expect(migrated.flagged.map((f) => f.token)).toEqual(['text-tiny', 'text-14xl-bold'])
+    const migrated = migrateTokens(
+      '<div class="text-tiny text-14xl-bold"></div>',
+      {
+        mode: 'migrated-typography',
+      },
+    )
+    expect(migrated.migrated).toBe(
+      '<div class="text-tiny text-14xl-bold"></div>',
+    )
+    expect(migrated.flagged.map((f) => f.token)).toEqual([
+      'text-tiny',
+      'text-14xl-bold',
+    ])
   })
 
   it('still corrects temp-scale text-12xl to text-11xl in migrated-typography mode, unflagged', () => {
@@ -104,18 +123,24 @@ describe('tokens v2 migration', () => {
   })
 
   it('keeps rounded-none, rounded-full, numbered tokens, and arbitrary radii', () => {
-    const input = '<div class="rounded-none rounded-full rounded-5 rounded-[3px]"></div>'
+    const input =
+      '<div class="rounded-none rounded-full rounded-5 rounded-[3px]"></div>'
     const result = migrateTokens(input)
 
     expect(result.migrated).toBe(input)
   })
 
   it('renames radius aliases in migrated-typography mode too', () => {
-    const result = migrateTokens('<div class="rounded rounded-md text-lg"></div>', {
-      mode: 'migrated-typography',
-    })
+    const result = migrateTokens(
+      '<div class="rounded rounded-md text-lg"></div>',
+      {
+        mode: 'migrated-typography',
+      },
+    )
 
-    expect(result.migrated).toBe('<div class="rounded-4 rounded-5 text-md"></div>')
+    expect(result.migrated).toBe(
+      '<div class="rounded-4 rounded-5 text-md"></div>',
+    )
   })
 
   it('rewrites bare `rounded` in class contexts and @apply, not in prose', () => {
@@ -157,9 +182,13 @@ describe('tokens v2 migration', () => {
   })
 
   it('flags text-*-black instead of renaming it (#998)', () => {
-    const result = migrateTokens('<div class="text-base-black text-p-xl-black"></div>')
+    const result = migrateTokens(
+      '<div class="text-base-black text-p-xl-black"></div>',
+    )
 
-    expect(result.migrated).toBe('<div class="text-base-black text-p-xl-black"></div>')
+    expect(result.migrated).toBe(
+      '<div class="text-base-black text-p-xl-black"></div>',
+    )
     expect(result.flagged.map((f) => f.token)).toEqual([
       'text-base-black',
       'text-p-xl-black',
@@ -173,7 +202,9 @@ describe('tokens v2 migration', () => {
     // removed black style.
     expect(result.migrated).toBe('<div class="text-2xl font-extrabold"></div>')
     expect(result.merges).toEqual([])
-    expect(result.flagged.map((f) => f.token)).toEqual(['text-2xl + font-extrabold'])
+    expect(result.flagged.map((f) => f.token)).toEqual([
+      'text-2xl + font-extrabold',
+    ])
 
     const black = migrateTokens('<div class="text-sm font-black"></div>')
     expect(black.migrated).toBe('<div class="text-sm font-black"></div>')
@@ -205,11 +236,16 @@ describe('tokens v2 migration', () => {
   })
 
   it('ink-shift is single-pass: ink-red-3 lands on ink-red-2, not ink-red-1', () => {
-    const result = migrateTokens('<div class="text-ink-red-3 text-ink-red-2"></div>', {
-      mode: 'ink-shift',
-    })
+    const result = migrateTokens(
+      '<div class="text-ink-red-3 text-ink-red-2"></div>',
+      {
+        mode: 'ink-shift',
+      },
+    )
 
-    expect(result.migrated).toBe('<div class="text-ink-red-2 text-ink-red-1"></div>')
+    expect(result.migrated).toBe(
+      '<div class="text-ink-red-2 text-ink-red-1"></div>',
+    )
   })
 
   it('ink-shift maps the old -10 top step onto the new -9 end of scale', () => {
@@ -219,7 +255,8 @@ describe('tokens v2 migration', () => {
   })
 
   it('ink-shift leaves ink-gray untouched', () => {
-    const input = '<div class="text-ink-gray-2 text-ink-gray-5 bg-ink-gray-9"></div>'
+    const input =
+      '<div class="text-ink-gray-2 text-ink-gray-5 bg-ink-gray-9"></div>'
     const result = migrateTokens(input, { mode: 'ink-shift' })
 
     expect(result.migrated).toBe(input)
@@ -240,7 +277,10 @@ describe('tokens v2 migration', () => {
     const result = migrateTokens(input, { mode: 'ink-shift' })
 
     expect(result.migrated).toBe(input)
-    expect(result.flagged.map((f) => f.token)).toEqual(['ink-red-1', 'ink-blue-1'])
+    expect(result.flagged.map((f) => f.token)).toEqual([
+      'ink-red-1',
+      'ink-blue-1',
+    ])
   })
 
   it('ink-shift runs nothing else: colors, typography, radii, merges all untouched', () => {
@@ -255,7 +295,9 @@ describe('tokens v2 migration', () => {
 
   it('ink-shift marker round-trips: absent, written, found', () => {
     // realpath: the search resolves symlinks, and os.tmpdir() is one on macOS.
-    const dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')))
+    const dir = fs.realpathSync(
+      fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')),
+    )
     tempDirs.push(dir)
 
     expect(findInkShiftMarker(dir)).toBe(null)
@@ -266,7 +308,9 @@ describe('tokens v2 migration', () => {
   it('ink-shift marker is found in both directions: ancestor and subtree', () => {
     // realpath: os.tmpdir() is a symlink on macOS, and path.resolve does not
     // follow symlinks.
-    const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')))
+    const root = fs.realpathSync(
+      fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')),
+    )
     tempDirs.push(root)
     const sub = path.join(root, 'src')
     fs.mkdirSync(sub)
@@ -289,7 +333,9 @@ describe('tokens v2 migration', () => {
   })
 
   it('marker search ignores this run own markers but still finds a rival', () => {
-    const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')))
+    const root = fs.realpathSync(
+      fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')),
+    )
     tempDirs.push(root)
     const sub = path.join(root, 'src')
     fs.mkdirSync(sub)
@@ -305,17 +351,23 @@ describe('tokens v2 migration', () => {
     expect(findInkShiftMarkerBelow(root, { ignore: ours })).toBe(
       path.join(sub, INK_SHIFT_MARKER),
     )
-    expect(findInkShiftMarker(sub, { ignore: new Set([path.join(sub, INK_SHIFT_MARKER)]) })).toBe(
-      path.join(root, INK_SHIFT_MARKER),
-    )
+    expect(
+      findInkShiftMarker(sub, {
+        ignore: new Set([path.join(sub, INK_SHIFT_MARKER)]),
+      }),
+    ).toBe(path.join(root, INK_SHIFT_MARKER))
   })
 
   it('ink-shift CLI guard: real run writes the marker, a second real run refuses, --dry-run previews', () => {
-    const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')))
+    const root = fs.realpathSync(
+      fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')),
+    )
     tempDirs.push(root)
     const fixture = path.join(root, 'a.vue')
     fs.writeFileSync(fixture, '<i class="text-ink-red-3"></i>')
-    const script = fileURLToPath(new URL('./migrate-tokens-v2.js', import.meta.url))
+    const script = fileURLToPath(
+      new URL('./migrate-tokens-v2.js', import.meta.url),
+    )
     const run = (...cliArgs) =>
       spawnSync(process.execPath, [script, ...cliArgs], { encoding: 'utf8' })
 
@@ -341,7 +393,9 @@ describe('tokens v2 migration', () => {
   })
 
   it('writeInkShiftMarker claims the directory: a second write throws EEXIST', () => {
-    const dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')))
+    const dir = fs.realpathSync(
+      fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')),
+    )
     tempDirs.push(dir)
     writeInkShiftMarker(dir)
     // Exclusive create, so the claim is atomic: a concurrent run cannot pass
@@ -353,15 +407,21 @@ describe('tokens v2 migration', () => {
   it.skipIf(process.getuid?.() === 0)(
     'ink-shift CLI fails closed when interrupted: marker lands before rewrites, retry refuses',
     () => {
-      const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')))
+      const root = fs.realpathSync(
+        fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')),
+      )
       tempDirs.push(root)
       // Unwritable file: the run crashes mid-loop after the marker is written.
       const blocked = path.join(root, 'a.vue')
       fs.writeFileSync(blocked, '<i class="text-ink-red-3"></i>')
       fs.chmodSync(blocked, 0o444)
-      const script = fileURLToPath(new URL('./migrate-tokens-v2.js', import.meta.url))
+      const script = fileURLToPath(
+        new URL('./migrate-tokens-v2.js', import.meta.url),
+      )
       const run = () =>
-        spawnSync(process.execPath, [script, '--ink-shift', root], { encoding: 'utf8' })
+        spawnSync(process.execPath, [script, '--ink-shift', root], {
+          encoding: 'utf8',
+        })
 
       const interrupted = run()
       expect(interrupted.status).not.toBe(0)
@@ -375,50 +435,79 @@ describe('tokens v2 migration', () => {
     },
   )
 
-  // A read-only directory does not stop root, so the write never fails there.
-  it.skipIf(process.getuid?.() === 0)(
-    'ink-shift CLI rolls back earlier markers when a marker write fails',
-    () => {
-      const base = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')))
-      tempDirs.push(base)
-      const ok = path.join(base, 'ok')
-      const blocked = path.join(base, 'blocked')
-      fs.mkdirSync(ok)
-      fs.mkdirSync(blocked)
-      const fixture = path.join(ok, 'a.vue')
-      fs.writeFileSync(fixture, '<i class="text-ink-red-3"></i>')
-      // The second target cannot take a marker, so the run must undo the first.
-      fs.chmodSync(blocked, 0o555)
-      const script = fileURLToPath(new URL('./migrate-tokens-v2.js', import.meta.url))
+  it('ink-shift CLI rolls back earlier markers when a marker write fails', () => {
+    const base = fs.realpathSync(
+      fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')),
+    )
+    tempDirs.push(base)
+    const ok = path.join(base, 'ok')
+    const blocked = path.join(base, 'blocked')
+    fs.mkdirSync(ok)
+    fs.mkdirSync(blocked)
+    const fixture = path.join(ok, 'a.vue')
+    fs.writeFileSync(fixture, '<i class="text-ink-red-3"></i>')
+    // Inject a deterministic second-marker write failure. chmod-based
+    // failures are ignored by Windows filesystems and by root.
+    const hook = path.join(base, 'fail-marker-write.cjs')
+    fs.writeFileSync(
+      hook,
+      `const fs = require('node:fs')
+const original = fs.writeFileSync
+const blocked = process.env.TEST_BLOCKED_MARKER
+fs.writeFileSync = function (file, ...args) {
+  if (String(file) === blocked) {
+    const error = new Error('simulated marker write failure')
+    error.code = 'EACCES'
+    throw error
+  }
+  return original.call(this, file, ...args)
+}
+`,
+    )
+    const script = fileURLToPath(
+      new URL('./migrate-tokens-v2.js', import.meta.url),
+    )
 
-      const result = spawnSync(process.execPath, [script, '--ink-shift', ok, blocked], {
+    const result = spawnSync(
+      process.execPath,
+      ['--require', hook, script, '--ink-shift', ok, blocked],
+      {
         encoding: 'utf8',
-      })
-      fs.chmodSync(blocked, 0o755)
-      expect(result.status).toBe(1)
-      // No rewrite happened, so no marker may survive to refuse the retry.
-      expect(fs.existsSync(path.join(ok, INK_SHIFT_MARKER))).toBe(false)
-      expect(fs.readFileSync(fixture, 'utf8')).toContain('ink-red-3')
+        env: {
+          ...process.env,
+          TEST_BLOCKED_MARKER: path.join(blocked, INK_SHIFT_MARKER),
+        },
+      },
+    )
+    expect(result.status).toBe(1)
+    // No rewrite happened, so no marker may survive to refuse the retry.
+    expect(fs.existsSync(path.join(ok, INK_SHIFT_MARKER))).toBe(false)
+    expect(fs.readFileSync(fixture, 'utf8')).toContain('ink-red-3')
 
-      // The retry runs and shifts exactly once.
-      const retry = spawnSync(process.execPath, [script, '--ink-shift', ok], { encoding: 'utf8' })
-      expect(retry.status).toBe(0)
-      expect(fs.readFileSync(fixture, 'utf8')).toContain('ink-red-2')
-    },
-  )
+    // The retry runs and shifts exactly once.
+    const retry = spawnSync(process.execPath, [script, '--ink-shift', ok], {
+      encoding: 'utf8',
+    })
+    expect(retry.status).toBe(0)
+    expect(fs.readFileSync(fixture, 'utf8')).toContain('ink-red-2')
+  })
 
   it('ink-shift CLI shifts a file once when targets overlap', () => {
-    const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')))
+    const root = fs.realpathSync(
+      fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')),
+    )
     tempDirs.push(root)
     const sub = path.join(root, 'src')
     fs.mkdirSync(sub)
     const fixture = path.join(sub, 'a.vue')
     fs.writeFileSync(fixture, '<i class="text-ink-red-3"></i>')
-    const script = fileURLToPath(new URL('./migrate-tokens-v2.js', import.meta.url))
+    const script = fileURLToPath(
+      new URL('./migrate-tokens-v2.js', import.meta.url),
+    )
 
     // A symlink alias of the subdirectory is the same target, not a third one.
     const alias = path.join(root, 'src-alias')
-    fs.symlinkSync(sub, alias)
+    createDirectorySymlink(sub, alias)
 
     const result = spawnSync(
       process.execPath,
@@ -437,28 +526,34 @@ describe('tokens v2 migration', () => {
     expect(retry.stderr).toContain('already ran')
   })
 
-  it('ink-shift CLI follows internal symlinks, reports external ones, survives a cycle', () => {
-    const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')))
+  it('ink-shift CLI follows internal symlinks, reports external ones, survives a cycle', (ctx) => {
+    const root = fs.realpathSync(
+      fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')),
+    )
     tempDirs.push(root)
     // Internal: a symlink to a sibling directory inside the target.
     const pkg = path.join(root, 'pkg')
     fs.mkdirSync(pkg)
     const internalFixture = path.join(pkg, 'a.vue')
     fs.writeFileSync(internalFixture, '<i class="text-ink-red-3"></i>')
-    fs.symlinkSync(pkg, path.join(root, 'pkg-link'))
+    createDirectorySymlink(pkg, path.join(root, 'pkg-link'))
     // A cycle: an internal link back to the root itself.
-    fs.symlinkSync(root, path.join(pkg, 'back'))
+    createDirectorySymlink(root, path.join(pkg, 'back'))
     // External: a shared package outside the target, linked under it.
-    const shared = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-shared-')))
+    const shared = fs.realpathSync(
+      fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-shared-')),
+    )
     tempDirs.push(shared)
     const externalFixture = path.join(shared, 'b.vue')
     fs.writeFileSync(externalFixture, '<i class="text-ink-red-3"></i>')
-    fs.symlinkSync(shared, path.join(root, 'linked-pkg'))
+    createDirectorySymlink(shared, path.join(root, 'linked-pkg'))
     // External file link: same break through a narrower entry point.
     const externalFile = path.join(shared, 'theme.css')
     fs.writeFileSync(externalFile, '.a { @apply text-ink-red-3; }')
-    fs.symlinkSync(externalFile, path.join(root, 'theme.css'))
-    const script = fileURLToPath(new URL('./migrate-tokens-v2.js', import.meta.url))
+    createFileSymlinkOrSkip(externalFile, path.join(root, 'theme.css'), ctx)
+    const script = fileURLToPath(
+      new URL('./migrate-tokens-v2.js', import.meta.url),
+    )
 
     const result = spawnSync(process.execPath, [script, '--ink-shift', root], {
       encoding: 'utf8',
@@ -478,21 +573,27 @@ describe('tokens v2 migration', () => {
   })
 
   it('ink-shift CLI ignores a marker inside an external linked package', () => {
-    const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')))
+    const root = fs.realpathSync(
+      fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-')),
+    )
     tempDirs.push(root)
     const fixture = path.join(root, 'a.vue')
     fs.writeFileSync(fixture, '<i class="text-ink-red-3"></i>')
     // An external package that already shifted on its own, linked under a
     // target that has not. The run never rewrites it, so its marker must not
     // block the target.
-    const shared = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-shared-')))
+    const shared = fs.realpathSync(
+      fs.mkdtempSync(path.join(os.tmpdir(), 'tokens-v2-shared-')),
+    )
     tempDirs.push(shared)
     writeInkShiftMarker(shared)
-    fs.symlinkSync(shared, path.join(root, 'linked-pkg'))
+    createDirectorySymlink(shared, path.join(root, 'linked-pkg'))
 
     expect(findInkShiftMarkerBelow(root)).toBe(null)
 
-    const script = fileURLToPath(new URL('./migrate-tokens-v2.js', import.meta.url))
+    const script = fileURLToPath(
+      new URL('./migrate-tokens-v2.js', import.meta.url),
+    )
     const result = spawnSync(process.execPath, [script, '--ink-shift', root], {
       encoding: 'utf8',
       timeout: 30_000,
@@ -502,8 +603,12 @@ describe('tokens v2 migration', () => {
   })
 
   it('getMigrationMode selects ink-shift regardless of migration state', () => {
-    expect(getMigrationMode({ likelyMigrated: true }, { inkShift: true })).toBe('ink-shift')
-    expect(getMigrationMode({ likelyMigrated: false }, { inkShift: true })).toBe('ink-shift')
+    expect(getMigrationMode({ likelyMigrated: true }, { inkShift: true })).toBe(
+      'ink-shift',
+    )
+    expect(
+      getMigrationMode({ likelyMigrated: false }, { inkShift: true }),
+    ).toBe('ink-shift')
   })
 
   it('radius-only mode renames radii and touches nothing else', () => {

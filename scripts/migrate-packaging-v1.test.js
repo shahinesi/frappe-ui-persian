@@ -5,6 +5,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { migratePackaging, usesLucidePlugin } from './migrate-packaging-v1.js'
+import {
+  createDirectorySymlink,
+  createFileSymlinkOrSkip,
+} from '../test-utils/symlink.js'
 
 const SCRIPT = fileURLToPath(
   new URL('./migrate-packaging-v1.js', import.meta.url),
@@ -53,9 +57,7 @@ describe('tailwind preset path', () => {
     const result = migratePackaging(source, 'tailwind.config.ts')
     expect(result.changes).toHaveLength(3)
     expect(result.migrated).not.toContain('src/utils')
-    expect(
-      result.migrated.match(/'frappe-ui\/tailwind'/g),
-    ).toHaveLength(3)
+    expect(result.migrated.match(/'frappe-ui\/tailwind'/g)).toHaveLength(3)
   })
 
   it('rewrites the path written with its .js extension and keeps the quote style', () => {
@@ -194,7 +196,9 @@ describe('lucideIcons on the Vite plugin', () => {
     const result = migratePackaging(source, 'vite.config.ts', withIcons)
     expect(result.changes).toHaveLength(1)
     expect(result.migrated).toContain(`return frappeui({ a: 1 })`)
-    expect(result.migrated).toContain(`return frappeui({ lucideIcons: true, b: 2 })`)
+    expect(result.migrated).toContain(
+      `return frappeui({ lucideIcons: true, b: 2 })`,
+    )
   })
 
   it('leaves a config that already answers the question alone', () => {
@@ -265,9 +269,9 @@ describe('icon use detection', () => {
     expect(
       usesLucidePlugin(`import Check from '~icons/lucide/check'`, 'a.ts'),
     ).toBe(true)
-    expect(usesLucidePlugin(`import Check from '~icons/mdi/check'`, 'a.ts')).toBe(
-      false,
-    )
+    expect(
+      usesLucidePlugin(`import Check from '~icons/mdi/check'`, 'a.ts'),
+    ).toBe(false)
   })
 
   it('sees a <LucideX /> tag in a Vue template only', () => {
@@ -376,12 +380,12 @@ describe('command line', () => {
     expect(missing.stderr).toContain('Invalid path')
   })
 
-  it('runs through an installed-style binary symlink', () => {
+  it('runs through an installed-style binary symlink', (ctx) => {
     const dir = tempDir({
       'tailwind.config.js': `const preset = require('frappe-ui/src/utils/tailwind.config')\n`,
     })
     const bin = path.join(dir, 'packaging-v1')
-    fs.symlinkSync(SCRIPT, bin)
+    createFileSymlinkOrSkip(SCRIPT, bin, ctx)
 
     const result = spawnSync(process.execPath, [bin, dir], { encoding: 'utf8' })
     expect(result.status).toBe(0)
@@ -395,7 +399,7 @@ describe('command line', () => {
       'outside.js': `const preset = require('frappe-ui/src/utils/tailwind.config')\n`,
     })
     const dir = tempDir({})
-    fs.symlinkSync(outside, path.join(dir, 'linked'), 'dir')
+    createDirectorySymlink(outside, path.join(dir, 'linked'))
 
     const result = spawnSync(process.execPath, [SCRIPT, dir], {
       encoding: 'utf8',
@@ -413,7 +417,7 @@ describe('command line', () => {
     })
     const dir = tempDir({})
     const link = path.join(dir, 'linked')
-    fs.symlinkSync(outside, link, 'dir')
+    createDirectorySymlink(outside, link)
 
     const result = spawnSync(process.execPath, [SCRIPT, link], {
       encoding: 'utf8',

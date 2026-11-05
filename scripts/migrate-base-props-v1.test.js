@@ -5,6 +5,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { migrateBaseProps } from './migrate-base-props-v1.js'
+import { createDirectorySymlink } from '../test-utils/symlink.js'
 
 const SCRIPT = fileURLToPath(
   new URL('./migrate-base-props-v1.js', import.meta.url),
@@ -173,17 +174,12 @@ describe('base props migration', () => {
     )
   })
 
-  it('does not follow target symlinks', (ctx) => {
+  it('does not follow target symlinks', () => {
     const outside = tempDir({
       'Outside.vue': `<template><Icon name="lucide-x" /></template>`,
     })
     const dir = tempDir({})
-    try {
-      fs.symlinkSync(outside, path.join(dir, 'linked'), 'dir')
-    } catch (error) {
-      if (process.platform === 'win32' && error.code === 'EPERM') ctx.skip()
-      throw error
-    }
+    createDirectorySymlink(outside, path.join(dir, 'linked'))
 
     const result = spawnSync(process.execPath, [SCRIPT, dir], {
       encoding: 'utf8',

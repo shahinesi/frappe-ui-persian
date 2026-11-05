@@ -5,6 +5,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { migrateData } from './migrate-data-v1.js'
+import {
+  createDirectorySymlink,
+  createFileSymlinkOrSkip,
+} from '../test-utils/symlink.js'
 
 const SCRIPT = fileURLToPath(new URL('./migrate-data-v1.js', import.meta.url))
 const tempDirs = []
@@ -36,9 +40,7 @@ describe('data migration', () => {
 
   it('narrows an empty object, which the plugin also read as on', () => {
     const source = `import { FrappeUI } from 'frappe-ui'\napp.use(FrappeUI, { resources: {} })\n`
-    expect(migrateData(source, 'main.js').migrated).toContain(
-      'resources: true',
-    )
+    expect(migrateData(source, 'main.js').migrated).toContain('resources: true')
   })
 
   it('keeps other options and multiline objects intact', () => {
@@ -200,8 +202,12 @@ describe('data migration', () => {
 
     const result = migrateData(source, 'main.ts')
     expect(result.changes).toHaveLength(1)
-    expect(result.migrated).toContain(`  app.use(FrappeUI, { resources: { a } })`)
-    expect(result.migrated).toContain(`  app.use(FrappeUI, { resources: true })`)
+    expect(result.migrated).toContain(
+      `  app.use(FrappeUI, { resources: { a } })`,
+    )
+    expect(result.migrated).toContain(
+      `  app.use(FrappeUI, { resources: true })`,
+    )
   })
 
   it('migrates inside a Vue script setup block', () => {
@@ -299,12 +305,12 @@ describe('data migration', () => {
     expect(fs.readFileSync(path.join(dir, 'main.ts'), 'utf8')).toBe(source)
   })
 
-  it('runs through an installed-style binary symlink', () => {
+  it('runs through an installed-style binary symlink', (ctx) => {
     const dir = tempDir({
       'main.ts': `import { FrappeUI } from 'frappe-ui'\napp.use(FrappeUI, { resources: { a } })\n`,
     })
     const bin = path.join(dir, 'data-v1')
-    fs.symlinkSync(SCRIPT, bin)
+    createFileSymlinkOrSkip(SCRIPT, bin, ctx)
 
     const result = spawnSync(process.execPath, [bin, dir], { encoding: 'utf8' })
     expect(result.status).toBe(0)
@@ -318,7 +324,7 @@ describe('data migration', () => {
       'outside.ts': `import { FrappeUI } from 'frappe-ui'\napp.use(FrappeUI, { resources: { a } })\n`,
     })
     const dir = tempDir({})
-    fs.symlinkSync(outside, path.join(dir, 'linked'), 'dir')
+    createDirectorySymlink(outside, path.join(dir, 'linked'))
 
     const result = spawnSync(process.execPath, [SCRIPT, dir], {
       encoding: 'utf8',
@@ -341,7 +347,8 @@ describe('data migration', () => {
     for (const [, specifier] of imports) {
       if (specifier.startsWith('node:') || specifier.startsWith('.')) continue
       expect(
-        declared.dependencies?.[specifier] ?? declared.peerDependencies?.[specifier],
+        declared.dependencies?.[specifier] ??
+          declared.peerDependencies?.[specifier],
       ).toBeDefined()
     }
     expect(declared.bin['data-v1']).toBe('./scripts/migrate-data-v1.js')

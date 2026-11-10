@@ -17,9 +17,13 @@ afterEach(() => {
   while (openEditors.length) openEditors.pop()?.destroy()
 })
 
-function editorWith(content: string, extensions: Extensions = []) {
+function editorWith(
+  content: string,
+  extensions: Extensions = [],
+  linkExtension = LinkExtension,
+) {
   const editor = new Editor({
-    extensions: [Document, Paragraph, Text, LinkExtension, ...extensions],
+    extensions: [Document, Paragraph, Text, linkExtension, ...extensions],
     content,
   })
   openEditors.push(editor)
@@ -196,11 +200,21 @@ describe('exitLinkOnSpacePlugin', () => {
     const editor = editorWith(
       '<p>see <a href="https://example.com">docs</a></p>',
       [YSync],
+      LinkExtension.configure({ autolink: false }),
     )
     cursorAtLinkEnd(editor, 'docs')
 
-    // That peer runs this same plugin; its result replicates on its own.
-    editor.view.dispatch(editor.state.tr.insertText(' ').setMeta(ySyncKey, {}))
+    // The remote peer runs this same plugin and replicates the resulting
+    // linked whitespace. Mark it explicitly so the stand-in transaction
+    // models that result instead of relying on ProseMirror's cursor marks.
+    const from = editor.state.selection.from
+    const link = editor.schema.marks.link.create({
+      href: 'https://example.com',
+    })
+    const remote = editor.state.tr.insertText(' ', from)
+    remote.addMark(from, from + 1, link)
+    remote.setMeta(ySyncKey, { isChangeOrigin: true })
+    editor.view.dispatch(remote)
 
     expect(inlineHTML(editor)).toBe(
       'see <a href="https://example.com">docs </a>',
@@ -226,12 +240,25 @@ describe('exitLinkOnSpacePlugin', () => {
     // A read-only user cannot type, so this drives the guard through
     // `view.dispatch` instead: it pins the guard rather than the user path,
     // which matters for a programmatic write into a read-only editor.
-    const editor = editorWith('<p><a href="https://example.com">docs</a></p>')
+    const editor = editorWith(
+      '<p><a href="https://example.com">docs</a></p>',
+      [],
+      LinkExtension.configure({ autolink: false }),
+    )
     editor.setEditable(false)
     cursorAtLinkEnd(editor, 'docs')
 
-    type(editor, ' x')
+    // A read-only user cannot type. Drive the guard with a programmatic
+    // transaction that already carries the mark; otherwise insertion at this
+    // cursor may be unmarked before the plugin gets a chance to run.
+    const from = editor.state.selection.from
+    const link = editor.schema.marks.link.create({
+      href: 'https://example.com',
+    })
+    const transaction = editor.state.tr.insertText(' ', from)
+    transaction.addMark(from, from + 1, link)
+    editor.view.dispatch(transaction)
 
-    expect(inlineHTML(editor)).toBe('<a href="https://example.com">docs x</a>')
+    expect(inlineHTML(editor)).toBe('<a href="https://example.com">docs </a>')
   })
 })

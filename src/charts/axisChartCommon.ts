@@ -11,7 +11,7 @@ import {
   truncateMiddleToWidth,
   type TimeGrain,
 } from './format'
-import { CHART_FONT_FAMILY } from './measureText'
+import { getChartFontFamily } from './measureText'
 import { paletteColors, type ChartTokens } from './tokens'
 import type { AxisChartFormatters } from './seriesData'
 import { mergeDeep } from './utils'
@@ -307,7 +307,7 @@ export function axisChartBase(
     animation: true,
     animationDuration: 500,
     animationDurationUpdate: 300,
-    textStyle: { fontFamily: CHART_FONT_FAMILY },
+    textStyle: { fontFamily: getChartFontFamily() },
     // echarts' own tooltip stays on for the axis pointer only; the visible
     // tooltip is a Vue component (see ChartTooltip).
     tooltip: {

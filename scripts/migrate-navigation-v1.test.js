@@ -5,12 +5,16 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { migrateNavigation } from './migrate-navigation-v1.js'
+import { createFileSymlinkOrSkip } from '../test-utils/symlink.js'
 
-const SCRIPT = fileURLToPath(new URL('./migrate-navigation-v1.js', import.meta.url))
+const SCRIPT = fileURLToPath(
+  new URL('./migrate-navigation-v1.js', import.meta.url),
+)
 const tempDirs = []
 
 afterEach(() => {
-  for (const dir of tempDirs.splice(0)) fs.rmSync(dir, { recursive: true, force: true })
+  for (const dir of tempDirs.splice(0))
+    fs.rmSync(dir, { recursive: true, force: true })
 })
 
 function tempDir(source) {
@@ -25,7 +29,9 @@ describe('navigation prop migration', () => {
     const source = `<template><SettingsDialog shortcut/><SettingsDialog :shortcut="true"/><SettingsDialog :shortcut="false"/></template>`
     const result = migrateNavigation(source)
     expect(result.refusals).toEqual([])
-    expect(result.migrated).toBe(`<template><SettingsDialog /><SettingsDialog /><SettingsDialog :keyboard-shortcut="false"/></template>`)
+    expect(result.migrated).toBe(
+      `<template><SettingsDialog /><SettingsDialog /><SettingsDialog :keyboard-shortcut="false"/></template>`,
+    )
     expect(migrateNavigation(result.migrated).migrated).toBe(result.migrated)
   })
 
@@ -36,7 +42,9 @@ describe('navigation prop migration', () => {
     ]) {
       const result = migrateNavigation(source)
       expect(result.refusals).toEqual([
-        expect.objectContaining({ message: expect.stringContaining('dynamic shortcut') }),
+        expect.objectContaining({
+          message: expect.stringContaining('dynamic shortcut'),
+        }),
       ])
       expect(result.migrated).toBe(source)
     }
@@ -45,7 +53,9 @@ describe('navigation prop migration', () => {
   it('renames the rail variant', () => {
     const source = `<template><SidebarRailItem variant="tile"/></template>`
     const result = migrateNavigation(source)
-    expect(result.migrated).toBe(`<template><SidebarRailItem variant="subtle"/></template>`)
+    expect(result.migrated).toBe(
+      `<template><SidebarRailItem variant="subtle"/></template>`,
+    )
   })
 
   it('follows aliases and leaves locally imported components alone', () => {
@@ -102,7 +112,11 @@ describe('tab slot migration', () => {
   })
 
   it('refuses duplicate, computed, and rest slot bindings', () => {
-    for (const pattern of ['{ selected, active }', '{ [name]: selected }', '{ selected, ...rest }']) {
+    for (const pattern of [
+      '{ selected, active }',
+      '{ [name]: selected }',
+      '{ selected, ...rest }',
+    ]) {
       const source = `<template><Tabs><template #tab-label="${pattern}">{{ selected }}</template></Tabs></template>`
       const result = migrateNavigation(source)
       expect(result.refusals.length).toBeGreaterThan(0)
@@ -112,14 +126,20 @@ describe('tab slot migration', () => {
 })
 
 describe('navigation CLI', () => {
-  it('runs through an installed-bin symlink and rejects unknown options', () => {
-    const dir = tempDir(`<template><SidebarRailItem variant="tile"/></template>`)
+  it('runs through an installed-bin symlink and rejects unknown options', (ctx) => {
+    const dir = tempDir(
+      `<template><SidebarRailItem variant="tile"/></template>`,
+    )
     const bin = path.join(dir, 'navigation-v1')
-    fs.symlinkSync(SCRIPT, bin)
+    createFileSymlinkOrSkip(SCRIPT, bin, ctx)
     const result = spawnSync(process.execPath, [bin, dir], { encoding: 'utf8' })
     expect(result.status).toBe(0)
-    expect(fs.readFileSync(path.join(dir, 'Example.vue'), 'utf8')).toContain('subtle')
-    const refused = spawnSync(process.execPath, [bin, '--force', dir], { encoding: 'utf8' })
+    expect(fs.readFileSync(path.join(dir, 'Example.vue'), 'utf8')).toContain(
+      'subtle',
+    )
+    const refused = spawnSync(process.execPath, [bin, '--force', dir], {
+      encoding: 'utf8',
+    })
     expect(refused.status).toBe(1)
     expect(refused.stderr).toContain('Unknown option')
   })

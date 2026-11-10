@@ -8,7 +8,7 @@ import {
   toNumber,
 } from './axisChartCommon'
 import { formatLabel } from './format'
-import { CHART_FONT_FAMILY } from './measureText'
+import { getChartFontFamily } from './measureText'
 import { buildReferenceLineSeries } from './referenceLines'
 import { paletteColors, type ChartTokens } from './tokens'
 import { mergeDeep } from './utils'
@@ -183,7 +183,7 @@ export function buildScatterOption(
     animation: true,
     animationDuration: 500,
     animationDurationUpdate: 300,
-    textStyle: { fontFamily: CHART_FONT_FAMILY },
+    textStyle: { fontFamily: getChartFontFamily() },
     // No `tooltip` key and no TooltipComponent: a point is read on its own
     // rather than through an axis pointer, and the visible tooltip is a Vue
     // component (ChartTooltip).

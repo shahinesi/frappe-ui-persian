@@ -7,7 +7,7 @@ import {
 } from './axisChartCommon'
 import { hexToOklch, interpolateRamp, oklchToHex } from './colorMath'
 import { formatValue } from './format'
-import { CHART_FONT_FAMILY } from './measureText'
+import { getChartFontFamily } from './measureText'
 import { insideLabelColor, rampStops, type ChartTokens } from './tokens'
 import { mergeDeep } from './utils'
 import type {
@@ -293,7 +293,7 @@ export function buildHeatmapOption(
     animation: true,
     animationDuration: 500,
     animationDurationUpdate: 300,
-    textStyle: { fontFamily: CHART_FONT_FAMILY },
+    textStyle: { fontFamily: getChartFontFamily() },
     // No `tooltip` key and no TooltipComponent: a heatmap has no axis pointer
     // worth drawing, and the visible tooltip is a Vue component (ChartTooltip).
     grid: {

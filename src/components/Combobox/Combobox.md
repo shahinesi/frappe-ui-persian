@@ -60,6 +60,13 @@ goes back to the trigger, inside the dialog.
 
 ## Behavior
 
+### Localization
+
+The built-in `Select option` placeholder and `No results` empty state follow
+the document locale through `useLocalizedText`. Pass the host application's
+translator with `translator` to localize those labels. Explicit `placeholder`
+and `emptyText` values remain unchanged.
+
 ### Options
 
 `options` takes strings, `{ label, value }` objects, or groups of

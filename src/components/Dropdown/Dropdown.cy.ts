@@ -65,6 +65,24 @@ const nestedSubmenuActions = [
 ]
 
 describe('Dropdown', () => {
+  let originalDocumentDirection: string | null = null
+
+  beforeEach(() => {
+    cy.document().then((document) => {
+      originalDocumentDirection = document.documentElement.getAttribute('dir')
+    })
+  })
+
+  afterEach(() => {
+    cy.document().then((document) => {
+      if (originalDocumentDirection === null) {
+        document.documentElement.removeAttribute('dir')
+      } else {
+        document.documentElement.setAttribute('dir', originalDocumentDirection)
+      }
+    })
+  })
+
   it('Rendering', () => {
     cy.mount(Dropdown, { props: { options } })
 
@@ -85,6 +103,22 @@ describe('Dropdown', () => {
     cy.get('[role=menuitem]').eq(1).click()
 
     cy.get('[role=menu]').should('not.exist')
+  })
+
+  it('applies and reactively updates document direction on the portaled menu', () => {
+    cy.document().then((document) => {
+      document.documentElement.dir = 'rtl'
+    })
+    cy.mount(Dropdown, { props: { options } })
+
+    cy.get('[aria-haspopup=menu]').click()
+    cy.get('[data-slot="content"]').should('have.attr', 'dir', 'rtl')
+    cy.get('[role=menuitem]').first().should('exist')
+
+    cy.document().then((document) => {
+      document.documentElement.dir = 'ltr'
+    })
+    cy.get('[data-slot="content"]').should('have.attr', 'dir', 'ltr')
   })
 
   it('Submenus', () => {

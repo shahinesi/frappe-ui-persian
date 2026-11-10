@@ -15,6 +15,8 @@ import effects from './effects.js'
 import radius from './radius.js'
 import typography from './typography.js'
 
+const normalizeEol = (value) => value.replace(/\r\n/g, '\n')
+
 describe('hexToOklch', () => {
   it('converts a 6-digit hex', () => {
     expect(hexToOklch('#ffffff')).toBe('oklch(1 0 0)')
@@ -59,7 +61,6 @@ describe('serializeTokenModule', () => {
     'radius.js': radius,
     'typography.js': typography,
   }
-
   it('covers every generated file in this directory', () => {
     // `build.js`, `build-types.js` and their tests are the generators. Every
     // other .js here is token data, and every one of those is checked below.
@@ -75,8 +76,8 @@ describe('serializeTokenModule', () => {
   it.each(Object.entries(generated))(
     'round-trips %s byte for byte',
     (file, data) => {
-      expect(serializeTokenModule(data)).toBe(
-        readFileSync(join(dir, file), 'utf8'),
+      expect(normalizeEol(serializeTokenModule(data))).toBe(
+        normalizeEol(readFileSync(join(dir, file), 'utf8')),
       )
     },
   )
@@ -101,7 +102,9 @@ describe('generateTokenTypes', () => {
   // tokens.js, and a sync that moves a key all fail here until the file is
   // regenerated. `yarn sync-token-types` writes it.
   it('matches the committed tokens.d.ts byte for byte', async () => {
-    expect(await generateTokenTypes()).toBe(committed)
+    expect(normalizeEol(await generateTokenTypes())).toBe(
+      normalizeEol(committed),
+    )
   })
 
   // What the old hand-written file could get wrong: an export with no

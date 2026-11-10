@@ -6,6 +6,7 @@
  */
 
 import { dayjs } from '../../utils/dayjs'
+import { digitsArToFa, digitsFaToEn } from '@persian-tools/persian-tools'
 
 const DEFAULT_TIME_FORMAT = 'HH:mm'
 const REFERENCE_DATE = '2000-01-01'
@@ -87,10 +88,11 @@ export function parseFlexibleTime(
   format = DEFAULT_TIME_FORMAT,
 ): ParsedTime {
   if (!input) return { valid: false }
-  const formatted = parseTimeWithFormat(input, format)
+  const normalizedInput = normalizeTimeDigits(input.trim())
+  const formatted = parseTimeWithFormat(normalizedInput, format)
   if (formatted.valid) return formatted
 
-  let s = input.trim().toLowerCase()
+  let s = normalizedInput.toLowerCase()
   s = s.replace(/\./g, '')
   s = s.replace(/(\d)(am|pm)$/, '$1 $2')
 
@@ -147,6 +149,7 @@ export function normalize24(raw: string, format = DEFAULT_TIME_FORMAT): string {
 export function formatTime(
   val24: string,
   format = DEFAULT_TIME_FORMAT,
+  _locale?: string,
 ): string {
   if (!val24) return ''
   const canonicalFormat = val24.length === 8 ? 'HH:mm:ss' : 'HH:mm'
@@ -157,6 +160,10 @@ export function formatTime(
   )
   if (!parsed.isValid()) return val24
   return parsed.format(format || DEFAULT_TIME_FORMAT)
+}
+
+function normalizeTimeDigits(value: string): string {
+  return digitsFaToEn(digitsArToFa(value))
 }
 
 /** Total minutes (0–1439) from an `HH:mm[:ss]` string, or null if malformed. */
@@ -185,11 +192,13 @@ export function isOutOfRange(
 export function generateTimeOptions({
   interval,
   format,
+  locale,
   minMinutes,
   maxMinutes,
 }: {
   interval: number
   format?: string
+  locale?: string
   minMinutes: number | null
   maxMinutes: number | null
 }): TimeOption[] {
@@ -201,7 +210,7 @@ export function generateTimeOptions({
       .padStart(2, '0')
     const mm = (m % 60).toString().padStart(2, '0')
     const value = `${hh}:${mm}`
-    out.push({ value, label: formatTime(value, format) })
+    out.push({ value, label: formatTime(value, format, locale) })
   }
   return out
 }

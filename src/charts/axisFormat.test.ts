@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { applyAxisFormatters } from './axisFormat'
+import { normalizeAxisChartProps } from './seriesData'
 import { buildAxisChartOption } from './axisChartOptions'
 import type { ChartTokens } from './tokens'
 import type { AxisChartConfig } from './types'
@@ -47,6 +48,29 @@ describe('applyAxisFormatters', () => {
     expect(
       build({ x: (value) => `[${value}]` }).xAxis.axisLabel.formatter('Jan'),
     ).toBe('[Jan]')
+  })
+
+  it('honours the consumer x formatter on a time axis', () => {
+    const normalized = normalizeAxisChartProps({
+      data: [
+        { month: '2026-10-01', sales: 10 },
+        { month: '2026-11-01', sales: 20 },
+      ],
+      x: 'month',
+      y: 'sales',
+      xAxis: { type: 'time', format: (value) => `date:${value}` },
+    })
+    const option = buildAxisChartOption(
+      applyAxisFormatters(
+        { ...normalized.config, type: 'bar' },
+        normalized.format,
+      ),
+      { tokens },
+    ) as any
+
+    expect(option.xAxis.axisLabel.formatter('2026-10-01')).toBe(
+      'date:2026-10-01',
+    )
   })
 
   it('formats each value axis with its own format', () => {

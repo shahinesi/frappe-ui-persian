@@ -42,10 +42,15 @@
   },
   {
     name: 'placeholder',
-    description: 'Placeholder text shown when no value is selected.',
+    description: 'Placeholder text shown when no value is selected. Defaults to localized `Select option`.',
     required: false,
-    type: 'string',
-    default: '"Select option"'
+    type: 'string'
+  },
+  {
+    name: 'translator',
+    description: 'Optional host translator used for built-in combobox labels.',
+    required: false,
+    type: 'LocaleTranslator'
   },
   {
     name: 'disabled',
@@ -118,10 +123,9 @@
   },
   {
     name: 'emptyText',
-    description: 'Fallback empty-state copy.',
+    description: 'Fallback empty-state copy. Defaults to localized `No results`.',
     required: false,
-    type: 'string',
-    default: '"No results"'
+    type: 'string'
   },
   {
     name: 'hideSearch',

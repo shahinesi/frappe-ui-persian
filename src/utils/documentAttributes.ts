@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { readDocumentLocale } from './readDocumentLocale'
 
 // Shared by document-aware composables and chart renderers, so one page gets
 // one observer for its language, direction, and theme attributes.
@@ -31,13 +32,5 @@ export function documentDir(): 'ltr' | 'rtl' {
  */
 export function documentLocale(): string {
   documentAttributes()
-  if (typeof document === 'undefined') return 'en-US'
-  const lang = document.documentElement.lang
-  if (!lang) return 'en-US'
-  try {
-    Intl.getCanonicalLocales(lang)
-    return lang
-  } catch {
-    return 'en-US'
-  }
+  return readDocumentLocale()
 }

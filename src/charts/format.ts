@@ -1,5 +1,18 @@
 import { dayjs } from '#utils/dayjs'
-import { formatLocaleNumber } from '../localization/localization'
+import {
+  formatLocaleNumber,
+  formatLocalePercent,
+} from '../localization/localization'
+import {
+  formatPersianDate,
+  getPersianDateFromISO,
+  getPersianMonthName,
+} from '../localization/persianCalendar'
+import {
+  resolveCalendar,
+  type CalendarPreference,
+} from '../localization/calendar'
+import { readDocumentLocale } from '../utils/readDocumentLocale'
 import { chartFont, measureTextWidth } from './measureText'
 
 export type TimeGrain =
@@ -132,9 +145,9 @@ export function formatValue(
 
 /** `0.4` -> `<1%`: a rounded `0%` on a slice that is visibly there reads as a bug. */
 export function formatPercent(percent: number) {
-  if (!percent) return '0%'
-  if (percent < 1) return '<1%'
-  return `${Math.round(percent)}%`
+  if (!percent) return formatLocalePercent(0)
+  if (percent < 1) return `<${formatLocalePercent(1)}`
+  return formatLocalePercent(Math.round(percent))
 }
 
 /** Keeps whole numbers whole instead of forcing a `.00` on every tick. */
@@ -154,7 +167,65 @@ export function formatDate(
   if (date === null || date === undefined || date === '') return ''
   const parsed = dayjs(date)
   if (!parsed.isValid()) return String(date)
-  return parsed.format(format || GRAIN_FORMATS[grain] || GRAIN_FORMATS.day)
+  const dateFormat = format || GRAIN_FORMATS[grain] || GRAIN_FORMATS.day
+  const locale = readDocumentLocale()
+
+  if (/^fa(?:-|$)/i.test(locale)) {
+    // Quarter grain is a Gregorian reporting period. Keep its label explicit
+    // so a Gregorian quarter is not presented as a Jalali quarter.
+    if (
+      grain === 'quarter' ||
+      /Q/.test(dateFormat.replace(/\[[^\]]*\]/g, ''))
+    ) {
+      return `فصل ${Math.floor(parsed.month() / 3) + 1} ${parsed.year()}`
+    }
+
+    const timeFormat = dateFormat.match(
+      /(?:HH?|hh)(?::mm)?(?::ss)?(?:\s*[aA])?/,
+    )?.[0]
+    const datePattern = dateFormat
+      .replace('[Week of]', '')
+      .replace(/[, ]*(?:HH?|hh)(?::mm)?(?::ss)?(?:\s*[aA])?.*$/, '')
+      .trim()
+    const localizedDatePattern = datePattern.replace(
+      /^(MMMM|MMM) D, YYYY$/,
+      'D $1 YYYY',
+    )
+    const dateTokens = datePattern.replace(/\[[^\]]*\]/g, '')
+    const dateLabel = /YYYY|YY|MMMM|MMM|MM|M|DD|D/.test(dateTokens)
+      ? formatPersianDate(
+          parsed.format('YYYY-MM-DD'),
+          locale,
+          localizedDatePattern,
+        )
+      : ''
+    const timeOptions: Intl.DateTimeFormatOptions = {
+      numberingSystem: 'latn',
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      ...(timeFormat?.includes('HH') || timeFormat?.includes('hh')
+        ? { hour: '2-digit' as const }
+        : timeFormat?.includes('H') || timeFormat?.includes('h')
+          ? { hour: 'numeric' as const }
+          : {}),
+      ...(timeFormat?.includes('mm') ? { minute: '2-digit' as const } : {}),
+      ...(timeFormat?.includes('ss') ? { second: '2-digit' as const } : {}),
+      ...(timeFormat?.includes('A') || timeFormat?.includes('a')
+        ? { hourCycle: 'h12' as const }
+        : timeFormat?.includes('H')
+          ? { hourCycle: 'h23' as const }
+          : {}),
+    }
+    const timeLabel = timeFormat
+      ? new Intl.DateTimeFormat(locale, timeOptions).format(parsed.toDate())
+      : ''
+    const dateTimeLabel = [dateLabel, timeLabel].filter(Boolean).join(' ')
+    const label = dateFormat.includes('[Week of]')
+      ? `هفتهٔ ${dateTimeLabel}`
+      : dateTimeLabel
+    return label
+  }
+
+  return parsed.format(dateFormat)
 }
 
 /**
@@ -267,16 +338,16 @@ function tickUnit(date: ReturnType<typeof dayjs>): TickUnit {
 }
 
 /**
- * One tick of a time axis, named by the coarsest unit it lands on — "Jan 2023,
- * Apr 2023, Jul 2023" repeats the year as noise, so the months read "Apr" and
- * the tick opening the year reads "2023". echarts marks that tick with a `level`
- * above zero, which the `primary` rich style sets apart. Ticks finer than the
- * grain go unlabelled: a monthly series says nothing about the 15th.
+ * Format one time-axis tick, naming it by its coarsest unit. Persian locales
+ * use Jalali labels; other locales keep Gregorian labels. ECharts marks the
+ * year-opening tick with `level`, and ticks finer than the grain are omitted.
+ * An explicit calendar or consumer axis formatter can override the default.
  */
 export function formatTimeAxisLabel(
   value: any,
   grain: TimeGrain = 'day',
   level = 0,
+  calendar: CalendarPreference = 'auto',
 ) {
   const date = dayjs(value)
   if (!date.isValid()) return ''
@@ -285,6 +356,40 @@ export function formatTimeAxisLabel(
   const finest = GRAIN_TICK_UNIT[grain] ?? 'day'
   if (TICK_UNITS.indexOf(unit) > TICK_UNITS.indexOf(finest)) return ''
 
-  const label = date.format(TICK_UNIT_FORMATS[unit])
+  const locale = readDocumentLocale()
+  const label =
+    resolveCalendar(calendar, locale) === 'persian'
+      ? formatPersianTimeAxisTick(date, unit, locale)
+      : date.format(TICK_UNIT_FORMATS[unit])
   return level > 0 ? `{primary|${label}}` : label
+}
+
+function formatPersianTimeAxisTick(
+  date: ReturnType<typeof dayjs>,
+  unit: TickUnit,
+  locale: string,
+): string {
+  const parts = getPersianDateFromISO(date.format('YYYY-MM-DD'))
+  if (unit === 'year') {
+    return formatLocalizedInteger(parts.year)
+  }
+  if (unit === 'month') {
+    return getPersianMonthName(parts.year, parts.month, locale, 'short')
+  }
+  if (unit === 'day') {
+    return formatLocalizedInteger(parts.day)
+  }
+
+  const timeOptions: Intl.DateTimeFormatOptions = {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+    numberingSystem: 'latn',
+    ...(unit === 'second' ? { second: '2-digit' } : {}),
+  }
+  return new Intl.DateTimeFormat(locale, timeOptions).format(date.toDate())
+}
+
+function formatLocalizedInteger(value: number): string {
+  return String(value)
 }
